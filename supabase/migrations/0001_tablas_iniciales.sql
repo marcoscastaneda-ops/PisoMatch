@@ -64,6 +64,15 @@ create trigger profiles_set_updated_at
   for each row execute function public.set_updated_at();
 
 -- ============================================================
+-- PERMISOS DE TABLA: quién puede entrar a cada tabla
+-- Los visitantes sin sesión (anon) no tienen acceso a nada.
+-- Los usuarios con sesión (authenticated) entran, y RLS limita qué filas tocan.
+-- ============================================================
+revoke all on public.profiles, public.questions, public.answers from anon, authenticated;
+grant select, insert, update, delete on public.profiles, public.answers to authenticated;
+grant select on public.questions to authenticated;
+
+-- ============================================================
 -- SEGURIDAD (RLS): cada usuario solo puede tocar sus propios datos
 -- ============================================================
 alter table public.profiles  enable row level security;
