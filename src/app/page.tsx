@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { connection } from "next/server";
 
 export default function Home() {
   return (
@@ -19,12 +19,16 @@ export default function Home() {
   );
 }
 
-// Comprueba que la web llega a Supabase leyendo la tabla de preguntas.
+// Comprueba la conexión con el servicio de inicio de sesión de Supabase (/auth/v1/health).
+// No lee ninguna tabla, así que funciona sin sesión y respeta las reglas de seguridad (RLS).
+// Responde 200 solo si la URL y la clave publishable son correctas.
 async function EstadoSupabase() {
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-  ) {
+  await connection(); // comprobar en cada visita, no al construir la web
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!url || !key) {
     return (
       <p className="text-sm text-amber-600">
         Faltan las claves de Supabase en .env.local ⚠️
@@ -32,15 +36,30 @@ async function EstadoSupabase() {
     );
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.from("questions").select("id").limit(1);
-
-  if (error) {
-    return (
-      <p className="text-sm text-red-600">
-        No se pudo conectar con Supabase ❌ ({error.message})
-      </p>
-    );
+  const mensajeError = await comprobarSupabase(url, key);
+  if (!mensajeError) {
+    return <p className="text-sm text-green-600">Conectado a Supabase ✅</p>;
   }
-  return <p className="text-sm text-green-600">Conectado a Supabase ✅</p>;
+
+  return (
+    <p className="text-sm text-red-600">
+      No se pudo conectar con Supabase ❌ ({mensajeError})
+    </p>
+  );
+}
+
+// Devuelve null si Supabase responde bien, o el motivo del fallo.
+async function comprobarSupabase(url: string, key: string) {
+  try {
+    const res = await fetch(`${url}/auth/v1/health`, {
+      headers: { apikey: key },
+      cache: "no-store",
+    });
+    if (res.ok) return null;
+    return res.status === 401
+      ? "la clave no es válida"
+      : `Supabase respondió ${res.status}`;
+  } catch {
+    return "no se encuentra la URL";
+  }
 }
