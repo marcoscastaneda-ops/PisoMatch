@@ -93,10 +93,10 @@ create policy "Cada usuario borra su perfil"
   to authenticated
   using ((select auth.uid()) = id);
 
--- QUESTIONS: solo lectura. Se añaden/editan desde el panel de Supabase.
-create policy "Preguntas visibles para todos"
+-- QUESTIONS: solo lectura para usuarios con sesión. Se añaden/editan desde el panel de Supabase.
+create policy "Preguntas visibles para usuarios con sesión"
   on public.questions for select
-  to anon, authenticated
+  to authenticated
   using (true);
 
 -- ANSWERS: cada usuario solo ve y gestiona sus propias respuestas.
