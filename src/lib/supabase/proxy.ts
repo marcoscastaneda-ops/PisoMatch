@@ -30,7 +30,33 @@ export async function updateSession(request: NextRequest) {
   );
 
   // No poner código entre createServerClient y getClaims: es lo que refresca la sesión.
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+  const conSesion = !!data?.claims?.sub;
+
+  // Redirecciones rápidas según la sesión. Solo al abrir páginas (GET): los envíos
+  // de formularios (POST) los gestiona cada Server Action.
+  // Ojo: esto no sustituye a comprobar la sesión en cada página y acción con datos.
+  if (request.method === "GET") {
+    const ruta = request.nextUrl.pathname;
+    if (!conSesion && RUTAS_CON_SESION.includes(ruta)) {
+      return redirigir(request, response, "/login");
+    }
+    if (conSesion && RUTAS_SIN_SESION.includes(ruta)) {
+      return redirigir(request, response, "/perfil");
+    }
+  }
 
   return response;
+}
+
+// Páginas que solo se ven con la sesión iniciada (sin sesión → /login).
+const RUTAS_CON_SESION = ["/perfil"];
+// Páginas que no tienen sentido con la sesión iniciada (con sesión → /perfil).
+const RUTAS_SIN_SESION = ["/login", "/registro"];
+
+// Redirige conservando las cookies que Supabase haya renovado en esta petición.
+function redirigir(request: NextRequest, response: NextResponse, destino: string) {
+  const redireccion = NextResponse.redirect(new URL(destino, request.url));
+  response.cookies.getAll().forEach((cookie) => redireccion.cookies.set(cookie));
+  return redireccion;
 }
