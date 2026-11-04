@@ -13,6 +13,7 @@ Equipo de estudiantes; explica los pasos en lenguaje sencillo y avisa cuando hay
   - `registro/` – crear cuenta (PM-7). `actions.ts` es la Server Action que valida y llama a Supabase.
   - `login/` – iniciar sesión (PM-8). `actions.ts` tiene `iniciarSesion` y `cerrarSesion`.
   - `perfil/` – bienvenida y perfil del usuario (PM-12).
+  - `privacidad/` – política de privacidad (PM-24). Página pública, se ve sin sesión.
 - `src/components/barra-superior.tsx` – barra de arriba (en `layout.tsx`); con sesión muestra «Cerrar sesión».
 - `src/lib/supabase/client.ts` – Supabase en el navegador (componentes `"use client"`).
 - `src/lib/supabase/server.ts` – Supabase en el servidor (crear uno nuevo en cada petición).
@@ -25,6 +26,7 @@ Equipo de estudiantes; explica los pasos en lenguaje sencillo y avisa cuando hay
 - La fila de `profiles` (nombre, rol y aceptación de la privacidad) se crea en `/perfil` (PM-12 y PM-24), no en el registro. El registro solo pide correo y contraseña, crea la cuenta en Supabase Auth y redirige a `/perfil` con la sesión iniciada.
 - **Login (PM-8):** si el correo o la contraseña no son correctos se muestra siempre «Correo o contraseña incorrectos», sin decir cuál falla (para no revelar qué correos tienen cuenta). Al entrar se va a `/perfil`. «Cerrar sesión» cierra la sesión solo en ese dispositivo (`scope: "local"`) y lleva a `/`.
 - **Redirecciones según la sesión**, en `src/lib/supabase/proxy.ts` (solo al abrir páginas, peticiones GET): sin sesión, `/perfil` → `/login`; con sesión, `/login` y `/registro` → `/perfil`. Para añadir otra página privada, añadirla a `RUTAS_CON_SESION`. Es una comprobación rápida: cada página y Server Action que use datos del usuario debe seguir comprobando la sesión por su cuenta (como hace `/perfil`).
+- **Privacidad (PM-24):** la casilla «Acepto la política de privacidad» es obligatoria en la bienvenida de `/perfil`; `crearPerfil` la comprueba también en el servidor y guarda `acepta_privacidad = true`. Los perfiles sin aceptar ven en `/perfil` una pantalla para aceptarla antes de seguir. `/privacidad` debe seguir siendo pública: no añadirla a las rutas que exigen sesión.
 
 ## Arrancar en local
 1. `npm install`

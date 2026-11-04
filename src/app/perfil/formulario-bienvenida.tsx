@@ -3,8 +3,9 @@
 import { useActionState } from "react";
 import { crearPerfil } from "./actions";
 import { OpcionesRol } from "./opciones-rol";
+import { CasillaPrivacidad } from "./casilla-privacidad";
 
-// Pantalla de primera vez: pide nombre y rol y crea el perfil.
+// Pantalla de primera vez: pide nombre, rol y aceptar la privacidad, y crea el perfil.
 export function FormularioBienvenida() {
   const [estado, accion, guardando] = useActionState(crearPerfil, null);
 
@@ -34,6 +35,8 @@ export function FormularioBienvenida() {
       </label>
 
       <OpcionesRol />
+
+      <CasillaPrivacidad />
 
       {estado?.error && (
         <p role="alert" className="text-sm text-red-600">
