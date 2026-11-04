@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { FormularioBienvenida } from "./formulario-bienvenida";
+import { FormularioPrivacidad } from "./formulario-privacidad";
 import { SelectorRol } from "./selector-rol";
 import { esRolValido, etiquetaDeRol, type Rol } from "./roles";
 
@@ -47,7 +48,7 @@ async function ContenidoPerfil() {
 
   const { data: fila, error } = await supabase
     .from("profiles")
-    .select("nombre, rol")
+    .select("nombre, rol, acepta_privacidad")
     .eq("id", userId)
     .maybeSingle();
 
@@ -59,12 +60,17 @@ async function ContenidoPerfil() {
     );
   }
 
-  // 2. Con sesión pero sin perfil → bienvenida (nombre + rol).
+  // 2. Con sesión pero sin perfil → bienvenida (nombre + rol + privacidad).
   if (!fila || !esRolValido(fila.rol)) {
     return <FormularioBienvenida />;
   }
 
-  // 3. Con perfil → ver datos y cambiar rol.
+  // 3. Perfil creado antes de PM-24 sin aceptar la privacidad → pedir que la acepte.
+  if (fila.acepta_privacidad !== true) {
+    return <FormularioPrivacidad nombre={fila.nombre} />;
+  }
+
+  // 4. Con perfil → ver datos y cambiar rol.
   return <VistaPerfil perfil={{ nombre: fila.nombre, rol: fila.rol }} />;
 }
 

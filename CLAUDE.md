@@ -11,6 +11,7 @@ Equipo de estudiantes; explica los pasos en lenguaje sencillo y avisa cuando hay
 ## Estructura
 - `src/app/` – páginas.
   - `registro/` – crear cuenta (PM-7). `actions.ts` es la Server Action que valida y llama a Supabase.
+  - `privacidad/` – política de privacidad (PM-24). Página pública, se ve sin sesión.
 - `src/lib/supabase/client.ts` – Supabase en el navegador (componentes `"use client"`).
 - `src/lib/supabase/server.ts` – Supabase en el servidor (crear uno nuevo en cada petición).
 - `src/lib/supabase/proxy.ts` + `src/proxy.ts` – renuevan la sesión en cada petición.
@@ -20,6 +21,7 @@ Equipo de estudiantes; explica los pasos en lenguaje sencillo y avisa cuando hay
 - **Cuentas con correo y contraseña (Supabase Auth), con «Confirm email» desactivado** (Supabase → Authentication → Sign In / Providers → Email). Al registrarse, `signUp` devuelve la sesión y el usuario entra directamente, sin correo de confirmación. Si algún día se activa: hay que añadir una pantalla de «revisa tu correo», y el aviso de correo ya registrado deja de funcionar (Supabase ya no devuelve error en ese caso, por seguridad).
 - Contraseña de al menos 8 caracteres (se comprueba en `src/app/registro/actions.ts`).
 - La fila de `profiles` (nombre, rol y aceptación de la privacidad) se crea en `/perfil` (PM-12 y PM-24), no en el registro. El registro solo pide correo y contraseña, crea la cuenta en Supabase Auth y redirige a `/perfil` con la sesión iniciada.
+- **Privacidad (PM-24):** la casilla «Acepto la política de privacidad» es obligatoria en la bienvenida de `/perfil`; `crearPerfil` la comprueba también en el servidor y guarda `acepta_privacidad = true`. Los perfiles sin aceptar ven en `/perfil` una pantalla para aceptarla antes de seguir. `/privacidad` debe seguir siendo pública: no añadirla a las rutas que exigen sesión.
 
 ## Arrancar en local
 1. `npm install`
