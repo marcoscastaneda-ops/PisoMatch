@@ -148,6 +148,12 @@ function VistaPerfil({ perfil }: { perfil: Perfil }) {
         >
           Test
         </Link>
+        <Link
+          href="/test/respuestas"
+          className="self-start font-medium text-zinc-900 underline dark:text-zinc-50"
+        >
+          Mis respuestas
+        </Link>
       </section>
 
       <section className="flex flex-col gap-3">
