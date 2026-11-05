@@ -10,7 +10,7 @@ export type Pregunta = {
   bloque: string; // nombre del bloque que ve el usuario, ej. «Tu rutina»
   texto: string;
   opciones: string[];
-  imprescindibleSugerida: boolean; // la ⭐ del documento; se usará en PM-16
+  imprescindibleSugerida: boolean; // muestra «Suele ser imprescindible» (PM-16)
 };
 
 // Nombres de los bloques (la columna questions.bloque guarda la clave corta).

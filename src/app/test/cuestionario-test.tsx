@@ -10,6 +10,11 @@ import {
   normalizarImportancia,
   type Importancia,
 } from "./importancia";
+import {
+  AVISO_LIMITE_IMPRESCINDIBLES,
+  MAX_IMPRESCINDIBLES,
+  VALOR_IMPRESCINDIBLE,
+} from "./imprescindibles";
 
 // El test, una pregunta cada vez. Las respuestas se guardan en el navegador
 // (estado `respuestas`) hasta pulsar «Finalizar»; así no se pierden al ir atrás
@@ -22,6 +27,8 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
   // id de la pregunta → importancia elegida. Si no está, vale «algo» (PM-14).
   const [importancias, setImportancias] = useState<Record<number, Importancia>>({});
   const importanciaDe = (id: number) => importancias[id] ?? IMPORTANCIA_POR_DEFECTO;
+  // ids de las preguntas marcadas como imprescindibles (PM-16), como mucho 3.
+  const [imprescindibles, setImprescindibles] = useState<number[]>([]);
 
   if (estado && "guardado" in estado) {
     return <ConfirmacionTest />;
@@ -31,6 +38,9 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
   const pregunta = preguntas[indice];
   const esLaUltima = indice === total - 1;
   const respondida = respuestas[pregunta.id] !== undefined;
+  const esImprescindible = imprescindibles.includes(pregunta.id);
+  // Con 3 ya marcadas, las demás casillas se bloquean; las marcadas siguen activas para desmarcarlas.
+  const casillaBloqueada = !esImprescindible && imprescindibles.length >= MAX_IMPRESCINDIBLES;
 
   return (
     <form action={accion} className="flex flex-col gap-6">
@@ -44,6 +54,12 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
       {preguntas.map((p) =>
         p.id !== pregunta.id ? (
           <input key={p.id} type="hidden" name={`importancia-${p.id}`} value={importanciaDe(p.id)} />
+        ) : null,
+      )}
+      {/* Y las otras preguntas marcadas como imprescindibles (las no marcadas no se envían). */}
+      {imprescindibles.map((id) =>
+        id !== pregunta.id ? (
+          <input key={id} type="hidden" name={`imprescindible-${id}`} value={VALOR_IMPRESCINDIBLE} />
         ) : null,
       )}
 
@@ -105,7 +121,42 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
           </select>
         </div>
 
-        {/* PM-16: aquí irá «Es imprescindible» (usar pregunta.imprescindibleSugerida). */}
+        {/* PM-16: «Es imprescindible para mí». Nunca se marca sola, ni en las sugeridas. */}
+        <div className="mt-2 flex flex-col gap-1">
+          <label
+            className={`flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 ${
+              casillaBloqueada ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+            }`}
+          >
+            <input
+              type="checkbox"
+              name={`imprescindible-${pregunta.id}`}
+              value={VALOR_IMPRESCINDIBLE}
+              checked={esImprescindible}
+              disabled={casillaBloqueada}
+              aria-describedby={`aviso-imprescindibles-${pregunta.id}`}
+              onChange={(e) =>
+                setImprescindibles(
+                  e.target.checked
+                    ? [...imprescindibles, pregunta.id]
+                    : imprescindibles.filter((id) => id !== pregunta.id),
+                )
+              }
+            />
+            Es imprescindible para mí
+          </label>
+          {pregunta.imprescindibleSugerida && (
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">Suele ser imprescindible</p>
+          )}
+          <div id={`aviso-imprescindibles-${pregunta.id}`} aria-live="polite" className="flex flex-col gap-1">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Imprescindibles: {imprescindibles.length} de {MAX_IMPRESCINDIBLES}
+            </p>
+            {casillaBloqueada && (
+              <p className="text-xs text-amber-700 dark:text-amber-400">{AVISO_LIMITE_IMPRESCINDIBLES}</p>
+            )}
+          </div>
+        </div>
       </fieldset>
 
       {estado && "error" in estado && (
