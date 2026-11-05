@@ -65,3 +65,9 @@ Equipo de estudiantes; explica los pasos en lenguaje sencillo y avisa cuando hay
 4. **Las claves nunca se suben a GitHub.** Van solo en `.env.local` (ignorado por Git). Nunca usar la clave `service_role`/secret en el código de la web.
 5. Mantener RLS activada en todas las tablas: cada usuario solo puede modificar sus propios datos.
 6. Antes de abrir una PR: `npm run lint` y `npm run build` deben pasar sin errores.
+7. **Estilo visual (PM-41): toda pantalla nueva o modificada sigue `docs/guia-estilo.md` y usa las piezas de `src/components/ui.tsx`** (botones, campos, tarjetas, avisos…), también las de PM-48. No inventar colores, tamaños ni componentes que ya existan; si falta una pieza, añadirla a `ui.tsx`. Esto se comprueba solo:
+   - `npm run lint` falla si aparecen variantes `dark:`, colores de Tailwind por defecto (`zinc-500`, `red-600`…) o texto menta/melocotón (regla en `eslint.config.mjs`).
+   - Claude Code pasa ESLint por cada archivo de `src/` que edita y corrige lo que falle (hook compartido en `.claude/settings.json` → `.claude/hooks/revisar-estilo.mjs`). No desactivarlo.
+
+## Guía de estilo completa (se carga sola en cada sesión)
+@docs/guia-estilo.md

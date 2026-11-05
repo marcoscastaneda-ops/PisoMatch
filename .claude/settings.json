@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/revisar-estilo.mjs\"",
+            "timeout": 60,
+            "statusMessage": "Revisando estilo con ESLint…"
+          }
+        ]
+      }
+    ]
+  }
+}
