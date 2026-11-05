@@ -2,12 +2,14 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { cargarPreguntas, perfilEstaCompleto } from "./datos";
+import { normalizarImportancia } from "./importancia";
 
 // Lo que devuelve la acción al cuestionario: null al empezar, un error o «guardado».
 export type EstadoTest = { error: string } | { guardado: true } | null;
 
 // Botón «Finalizar»: guarda las respuestas de todas las preguntas de una sola vez.
-// Cada respuesta llega en el campo "respuesta-<id de la pregunta>" con su valor (1, 2, 3…).
+// Cada respuesta llega en el campo "respuesta-<id de la pregunta>" con su valor (1, 2, 3…),
+// y su importancia en "importancia-<id de la pregunta>" (poco / algo / mucho).
 export async function guardarRespuestas(
   _estadoAnterior: EstadoTest,
   formData: FormData,
@@ -37,7 +39,9 @@ export async function guardarRespuestas(
     if (!Number.isInteger(valor) || valor < 1 || valor > pregunta.opciones.length) {
       return { error: "Faltan preguntas por responder." };
     }
-    filas.push({ user_id: userId, question_id: pregunta.id, respuesta: valor });
+    // PM-14: si la importancia falta o no es poco/algo/mucho, se guarda «algo».
+    const importancia = normalizarImportancia(formData.get(`importancia-${pregunta.id}`));
+    filas.push({ user_id: userId, question_id: pregunta.id, respuesta: valor, importancia });
   }
 
   // Un solo insert con todas las filas: o se guardan todas, o ninguna.
