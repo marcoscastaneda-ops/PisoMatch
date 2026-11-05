@@ -4,6 +4,12 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import { guardarRespuestas } from "./actions";
 import type { Pregunta } from "./datos";
+import {
+  IMPORTANCIA_POR_DEFECTO,
+  OPCIONES_IMPORTANCIA,
+  normalizarImportancia,
+  type Importancia,
+} from "./importancia";
 
 // El test, una pregunta cada vez. Las respuestas se guardan en el navegador
 // (estado `respuestas`) hasta pulsar «Finalizar»; así no se pierden al ir atrás
@@ -13,6 +19,9 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
   const [indice, setIndice] = useState(0);
   // id de la pregunta → valor elegido (1, 2, 3…)
   const [respuestas, setRespuestas] = useState<Record<number, number>>({});
+  // id de la pregunta → importancia elegida. Si no está, vale «algo» (PM-14).
+  const [importancias, setImportancias] = useState<Record<number, Importancia>>({});
+  const importanciaDe = (id: number) => importancias[id] ?? IMPORTANCIA_POR_DEFECTO;
 
   if (estado && "guardado" in estado) {
     return <ConfirmacionTest />;
@@ -29,6 +38,12 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
       {preguntas.map((p) =>
         p.id !== pregunta.id && respuestas[p.id] !== undefined ? (
           <input key={p.id} type="hidden" name={`respuesta-${p.id}`} value={respuestas[p.id]} />
+        ) : null,
+      )}
+      {/* Igual con la importancia de las otras preguntas («algo» si no se cambió). */}
+      {preguntas.map((p) =>
+        p.id !== pregunta.id ? (
+          <input key={p.id} type="hidden" name={`importancia-${p.id}`} value={importanciaDe(p.id)} />
         ) : null,
       )}
 
@@ -65,7 +80,31 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
           );
         })}
 
-        {/* PM-14: aquí irá «¿Cuánto te importa?» (poco / algo / mucho). */}
+        {/* PM-14: cuánto le importa esta pregunta. «Algo» viene elegido por defecto. */}
+        <div className="mt-2 flex flex-col gap-1">
+          <label
+            htmlFor={`importancia-${pregunta.id}`}
+            className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          >
+            ¿Cuánto te importa?
+          </label>
+          <select
+            id={`importancia-${pregunta.id}`}
+            name={`importancia-${pregunta.id}`}
+            value={importanciaDe(pregunta.id)}
+            onChange={(e) =>
+              setImportancias({ ...importancias, [pregunta.id]: normalizarImportancia(e.target.value) })
+            }
+            className="self-start rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
+          >
+            {OPCIONES_IMPORTANCIA.map((opcion) => (
+              <option key={opcion.valor} value={opcion.valor}>
+                {opcion.texto}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* PM-16: aquí irá «Es imprescindible» (usar pregunta.imprescindibleSugerida). */}
       </fieldset>
 
