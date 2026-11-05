@@ -5,6 +5,17 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { yaHizoElTest } from "@/app/test/datos";
+import {
+  Aviso,
+  COLUMNA_ESTRECHA,
+  ENLACE,
+  InsigniaAfinidad,
+  PAGINA,
+  SEPARACION_SECCIONES,
+  TARJETA,
+  TEXTO_SUAVE,
+  TITULO,
+} from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Afinidad · PisoMatch",
@@ -19,17 +30,15 @@ type Candidato = {
 
 export default function PaginaAfinidad() {
   return (
-    <main className="flex flex-1 justify-center bg-zinc-50 px-6 py-12 dark:bg-black">
-      <div className="flex w-full max-w-lg flex-col gap-8">
-        <section className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-            Tu afinidad
-          </h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
+    <main className={PAGINA}>
+      <div className={`${COLUMNA_ESTRECHA} ${SEPARACION_SECCIONES}`}>
+        <section className="flex flex-col gap-2">
+          <h1 className={TITULO}>Tu afinidad</h1>
+          <p className="text-texto-suave">
             Cuánto encajas con cada persona que ha hecho el test de convivencia.
           </p>
         </section>
-        <Suspense fallback={<p className="text-sm text-zinc-500">Calculando afinidades…</p>}>
+        <Suspense fallback={<p className={TEXTO_SUAVE}>Calculando afinidades…</p>}>
           <ListaAfinidad />
         </Suspense>
       </div>
@@ -91,7 +100,7 @@ async function ListaAfinidad() {
   if (candidatos.length === 0) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-zinc-600 dark:text-zinc-400">
+        <p className="text-texto-suave">
           Todavía nadie más ha completado el test. Vuelve en unos días.
         </p>
         <VolverAlPerfil />
@@ -105,12 +114,10 @@ async function ListaAfinidad() {
         {candidatos.map((candidato) => (
           <li
             key={candidato.id}
-            className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950"
+            className={`${TARJETA} flex items-center justify-between gap-4`}
           >
-            <span className="font-medium text-zinc-900 dark:text-zinc-50">{candidato.nombre}</span>
-            <span className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
-              {candidato.afinidad} %
-            </span>
+            <span className="min-w-0 text-lg font-semibold break-words">{candidato.nombre}</span>
+            <InsigniaAfinidad>{candidato.afinidad} %</InsigniaAfinidad>
           </li>
         ))}
       </ul>
@@ -121,15 +128,15 @@ async function ListaAfinidad() {
 
 function MensajeError() {
   return (
-    <p className="text-sm text-red-600">
+    <Aviso tipo="error">
       No se pudo calcular la afinidad. Recarga la página para intentarlo de nuevo.
-    </p>
+    </Aviso>
   );
 }
 
 function VolverAlPerfil() {
   return (
-    <Link href="/perfil" className="self-start font-medium text-zinc-900 underline dark:text-zinc-50">
+    <Link href="/perfil" className={`${ENLACE} self-start`}>
       Volver a mi perfil
     </Link>
   );

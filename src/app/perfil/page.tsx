@@ -10,6 +10,18 @@ import { FormularioPerfil } from "./formulario-perfil";
 import { yaHizoElTest } from "@/app/test/datos";
 import { esRolValido, type Rol } from "./roles";
 import { BUCKET_FOTOS, type ValoresDatos } from "./datos-perfil";
+import {
+  Aviso,
+  BOTON_SECUNDARIO,
+  COLUMNA_ESTRECHA,
+  ENLACE,
+  PAGINA,
+  SEPARACION_SECCIONES,
+  SUBTITULO,
+  TARJETA,
+  TEXTO_SUAVE,
+  TITULO,
+} from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Mi perfil · PisoMatch",
@@ -29,10 +41,10 @@ const DURACION_ENLACE_FOTO = 60 * 60;
 
 export default function PaginaPerfil() {
   return (
-    <main className="flex flex-1 justify-center bg-zinc-50 px-6 py-12 dark:bg-black">
-      <div className="flex w-full max-w-md flex-col gap-8">
+    <main className={PAGINA}>
+      <div className={`${COLUMNA_ESTRECHA} ${SEPARACION_SECCIONES}`}>
         <Suspense
-          fallback={<p className="text-sm text-zinc-500">Cargando tu perfil…</p>}
+          fallback={<p className={TEXTO_SUAVE}>Cargando tu perfil…</p>}
         >
           <ContenidoPerfil />
         </Suspense>
@@ -65,9 +77,9 @@ async function ContenidoPerfil() {
 
   if (error) {
     return (
-      <p className="text-sm text-red-600">
+      <Aviso tipo="error">
         No se pudo cargar tu perfil. Recarga la página para intentarlo de nuevo.
-      </p>
+      </Aviso>
     );
   }
 
@@ -118,44 +130,44 @@ async function ContenidoPerfil() {
 function VistaPerfil({ perfil }: { perfil: Perfil }) {
   return (
     <>
-      <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
+      <h1 className={TITULO}>
         Hola, {perfil.nombre}
       </h1>
 
       {/* «Tu rol» y «Tus datos», con un solo botón «Guardar cambios». */}
       <FormularioPerfil valoresIniciales={perfil.datos} fotoUrl={perfil.fotoUrl} />
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+      <section className={`${TARJETA} flex flex-col gap-3`}>
+        <h2 className={SUBTITULO}>
           Test de convivencia
         </h2>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-texto-suave">
           Cuéntanos cómo vives para encontrar compañeros compatibles.
         </p>
         <Link
           href="/test"
-          className="self-start rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className={`${BOTON_SECUNDARIO} mt-1 w-full sm:w-auto sm:self-start`}
         >
           {perfil.hizoElTest ? "Repetir el test" : "Hacer el test"}
         </Link>
         <Link
           href="/test/respuestas"
-          className="self-start font-medium text-zinc-900 underline dark:text-zinc-50"
+          className={`${ENLACE} self-start`}
         >
           Mis respuestas
         </Link>
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+      <section className={`${TARJETA} flex flex-col gap-3`}>
+        <h2 className={SUBTITULO}>
           Afinidad
         </h2>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-texto-suave">
           Mira con quién encajas mejor según el test de convivencia.
         </p>
         <Link
           href="/afinidad"
-          className="self-start rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className={`${BOTON_SECUNDARIO} mt-1 w-full sm:w-auto sm:self-start`}
         >
           Ver mi afinidad
         </Link>

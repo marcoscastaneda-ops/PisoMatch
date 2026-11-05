@@ -1,29 +1,21 @@
 import Link from "next/link";
+import { BOTON_PRINCIPAL, BOTON_SECUNDARIO, TITULO } from "@/components/ui";
 
 export default function Home() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-6 bg-zinc-50 px-6 text-center dark:bg-black">
-      <h1 className="text-5xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-        PisoMatch
-      </h1>
-      <p className="max-w-md text-lg text-zinc-600 dark:text-zinc-400">
+    <main className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-12 text-center sm:px-6">
+      <h1 className={TITULO}>PisoMatch</h1>
+      <p className="max-w-md text-lg leading-[1.5]">
         Compañeros de piso por compatibilidad de convivencia
       </p>
-      <div className="flex flex-wrap justify-center gap-3">
-        <Link
-          href="/registro"
-          className="rounded-lg bg-zinc-900 px-5 py-2 font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
+      <div className="flex w-full max-w-[480px] flex-col gap-3 sm:w-auto sm:flex-row sm:justify-center">
+        <Link href="/registro" className={`${BOTON_PRINCIPAL} sm:w-auto`}>
           Crear cuenta
         </Link>
-        <Link
-          href="/login"
-          className="rounded-lg border border-zinc-300 px-5 py-2 font-medium text-zinc-900 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-900"
-        >
+        <Link href="/login" className={BOTON_SECUNDARIO}>
           Iniciar sesión
         </Link>
       </div>
     </main>
   );
 }
-

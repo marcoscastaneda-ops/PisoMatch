@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Aviso, PAGINA, SUBTITULO, TITULO } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Política de privacidad · PisoMatch",
@@ -8,16 +9,16 @@ export const metadata: Metadata = {
 // Texto provisional (PM-24). Si cambia, revisar también la casilla de /perfil.
 export default function PaginaPrivacidad() {
   return (
-    <main className="flex flex-1 justify-center bg-zinc-50 px-6 py-12 dark:bg-black">
-      <article className="flex w-full max-w-2xl flex-col gap-8 text-zinc-700 dark:text-zinc-300">
+    <main className={PAGINA}>
+      <article className="flex w-full max-w-2xl flex-col gap-8 leading-[1.5] md:gap-12">
         <header className="flex flex-col gap-4">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className={TITULO}>
             Política de privacidad
           </h1>
-          <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+          <Aviso tipo="aviso">
             <strong>Versión provisional.</strong> PisoMatch es un proyecto universitario de
             CUNEF y este texto puede cambiar antes de la versión final.
-          </p>
+          </Aviso>
           <p>
             Aquí te explicamos, de forma sencilla, qué datos tuyos guardamos, para qué los
             usamos y quién puede verlos.
@@ -85,8 +86,8 @@ export default function PaginaPrivacidad() {
 
 function Seccion({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{titulo}</h2>
+    <section className="flex flex-col gap-3">
+      <h2 className={SUBTITULO}>{titulo}</h2>
       {children}
     </section>
   );
