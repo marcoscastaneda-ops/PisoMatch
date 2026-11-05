@@ -152,6 +152,21 @@ function VistaPerfil({ perfil }: { perfil: Perfil }) {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          Afinidad
+        </h2>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          Mira con quién encajas mejor según el test de convivencia.
+        </p>
+        <Link
+          href="/afinidad"
+          className="self-start rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+        >
+          Ver mi afinidad
+        </Link>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
           Tu rol
         </h2>
         <SelectorRol rolActual={perfil.rol} />
