@@ -15,6 +15,19 @@ import {
   MAX_IMPRESCINDIBLES,
   VALOR_IMPRESCINDIBLE,
 } from "./imprescindibles";
+import {
+  Aviso,
+  BOTON_PRINCIPAL,
+  BOTON_SECUNDARIO,
+  CAMPO,
+  ETIQUETA,
+  ETIQUETA_MAYUSCULAS,
+  ETIQUETA_SUGERENCIA,
+  GRUPO_CAMPO,
+  SUBTITULO,
+  TARJETA_OPCION,
+  TEXTO_SUAVE,
+} from "@/components/ui";
 
 // El test, una pregunta cada vez. Las respuestas se guardan en el navegador
 // (estado `respuestas`) hasta pulsar «Finalizar»; así no se pierden al ir atrás
@@ -67,41 +80,31 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
 
       {/* key: al cambiar de pregunta, React crea las opciones de cero. */}
       <fieldset key={pregunta.id} className="flex flex-col gap-3">
-        <legend className="mb-2 flex flex-col gap-1">
-          <span className="text-sm font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            {pregunta.bloque}
-          </span>
-          <span className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-            {pregunta.texto}
-          </span>
+        <legend className="mb-3 flex flex-col gap-2">
+          <span className={ETIQUETA_MAYUSCULAS}>{pregunta.bloque}</span>
+          <span className={SUBTITULO}>{pregunta.texto}</span>
         </legend>
 
         {pregunta.opciones.map((opcion, posicion) => {
           const valor = posicion + 1;
           return (
-            <label
-              key={valor}
-              className="flex cursor-pointer items-start gap-3 rounded-xl border border-zinc-200 bg-white p-4 has-[:checked]:border-zinc-900 has-[:checked]:ring-1 has-[:checked]:ring-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:has-[:checked]:border-zinc-100 dark:has-[:checked]:ring-zinc-100"
-            >
+            <label key={valor} className={TARJETA_OPCION}>
               <input
                 type="radio"
                 name={`respuesta-${pregunta.id}`}
                 value={valor}
                 checked={respuestas[pregunta.id] === valor}
                 onChange={() => setRespuestas({ ...respuestas, [pregunta.id]: valor })}
-                className="mt-1"
+                className="opcion"
               />
-              <span className="text-zinc-900 dark:text-zinc-50">{opcion}</span>
+              <span>{opcion}</span>
             </label>
           );
         })}
 
         {/* PM-14: cuánto le importa esta pregunta. «Algo» viene elegido por defecto. */}
-        <div className="mt-2 flex flex-col gap-1">
-          <label
-            htmlFor={`importancia-${pregunta.id}`}
-            className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-          >
+        <div className={`${GRUPO_CAMPO} mt-3`}>
+          <label htmlFor={`importancia-${pregunta.id}`} className={ETIQUETA}>
             ¿Cuánto te importa?
           </label>
           <select
@@ -111,7 +114,7 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
             onChange={(e) =>
               setImportancias({ ...importancias, [pregunta.id]: normalizarImportancia(e.target.value) })
             }
-            className="self-start rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
+            className={CAMPO}
           >
             {OPCIONES_IMPORTANCIA.map((opcion) => (
               <option key={opcion.valor} value={opcion.valor}>
@@ -122,10 +125,10 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
         </div>
 
         {/* PM-16: «Es imprescindible para mí». Nunca se marca sola, ni en las sugeridas. */}
-        <div className="mt-2 flex flex-col gap-1">
+        <div className="mt-3 flex flex-col gap-2">
           <label
-            className={`flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 ${
-              casillaBloqueada ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+            className={`flex min-h-12 items-center gap-3 font-semibold ${
+              casillaBloqueada ? "cursor-not-allowed text-desactivado-texto" : "cursor-pointer"
             }`}
           >
             <input
@@ -142,35 +145,34 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
                     : imprescindibles.filter((id) => id !== pregunta.id),
                 )
               }
+              className="casilla"
             />
             Es imprescindible para mí
           </label>
           {pregunta.imprescindibleSugerida && (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">Suele ser imprescindible</p>
+            <p className={ETIQUETA_SUGERENCIA}>Suele ser imprescindible</p>
           )}
-          <div id={`aviso-imprescindibles-${pregunta.id}`} aria-live="polite" className="flex flex-col gap-1">
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <div id={`aviso-imprescindibles-${pregunta.id}`} aria-live="polite" className="flex flex-col gap-2">
+            <p className={TEXTO_SUAVE}>
               Imprescindibles: {imprescindibles.length} de {MAX_IMPRESCINDIBLES}
             </p>
-            {casillaBloqueada && (
-              <p className="text-xs text-amber-700 dark:text-amber-400">{AVISO_LIMITE_IMPRESCINDIBLES}</p>
-            )}
+            {casillaBloqueada && <Aviso tipo="aviso">{AVISO_LIMITE_IMPRESCINDIBLES}</Aviso>}
           </div>
         </div>
       </fieldset>
 
       {estado && "error" in estado && (
-        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200">
+        <Aviso tipo="error" role="alert">
           {estado.error}
-        </p>
+        </Aviso>
       )}
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={() => setIndice(indice - 1)}
           disabled={indice === 0 || guardando}
-          className="rounded-lg border border-zinc-300 px-4 py-2 font-medium text-zinc-900 hover:bg-zinc-100 disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-50 dark:hover:bg-zinc-900"
+          className={`${BOTON_SECUNDARIO} flex-1 sm:flex-none`}
         >
           Anterior
         </button>
@@ -179,7 +181,7 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
           <button
             type="submit"
             disabled={!respondida || guardando}
-            className="rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className={`${BOTON_PRINCIPAL} flex-1 sm:ml-auto sm:w-auto sm:flex-none`}
           >
             {guardando ? "Guardando…" : "Finalizar"}
           </button>
@@ -188,7 +190,7 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
             type="button"
             onClick={() => setIndice(indice + 1)}
             disabled={!respondida}
-            className="rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className={`${BOTON_PRINCIPAL} flex-1 sm:ml-auto sm:w-auto sm:flex-none`}
           >
             Siguiente
           </button>
@@ -196,19 +198,17 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
       </div>
 
       {!respondida && (
-        <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
-          Elige una respuesta para continuar.
-        </p>
+        <p className={`text-center ${TEXTO_SUAVE}`}>Elige una respuesta para continuar.</p>
       )}
     </form>
   );
 }
 
-// «Pregunta 3 de 15» y la barra que se va llenando.
+// «Pregunta 3 de 15» y la barra que se va llenando (menta, como pide la guía).
 function BarraProgreso({ actual, total }: { actual: number; total: number }) {
   return (
     <div className="flex flex-col gap-2">
-      <p aria-live="polite" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <p aria-live="polite" className="text-sm font-semibold">
         Pregunta {actual} de {total}
       </p>
       <div
@@ -217,10 +217,10 @@ function BarraProgreso({ actual, total }: { actual: number; total: number }) {
         aria-valuemin={1}
         aria-valuemax={total}
         aria-valuenow={actual}
-        className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800"
+        className="h-2 w-full overflow-hidden rounded-full bg-borde"
       >
         <div
-          className="h-full rounded-full bg-zinc-900 transition-all dark:bg-zinc-50"
+          className="h-full rounded-full bg-menta transition-all"
           style={{ width: `${(actual / total) * 100}%` }}
         />
       </div>
@@ -231,16 +231,11 @@ function BarraProgreso({ actual, total }: { actual: number; total: number }) {
 function ConfirmacionTest() {
   return (
     <div role="status" className="flex flex-col gap-4">
-      <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-        ¡Test completado!
-      </h2>
-      <p className="text-zinc-600 dark:text-zinc-400">
+      <h2 className={SUBTITULO}>¡Test completado!</h2>
+      <p className="text-texto-suave">
         Hemos guardado tus respuestas. Con ellas buscaremos compañeros de piso que encajen contigo.
       </p>
-      <Link
-        href="/perfil"
-        className="self-start rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-      >
+      <Link href="/perfil" className={`${BOTON_PRINCIPAL} mt-2`}>
         Volver a mi perfil
       </Link>
     </div>

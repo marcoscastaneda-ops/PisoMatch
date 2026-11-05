@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { Aviso, COLUMNA_ESTRECHA, ENLACE, PAGINA, SEPARACION_SECCIONES, TEXTO_SUAVE, TITULO } from "@/components/ui";
 import { cargarPreguntas, perfilEstaCompleto, yaHizoElTest } from "./datos";
 import { CuestionarioTest } from "./cuestionario-test";
 
@@ -13,12 +14,12 @@ export const metadata: Metadata = {
 
 export default function PaginaTest() {
   return (
-    <main className="flex flex-1 justify-center bg-zinc-50 px-6 py-12 dark:bg-black">
-      <div className="flex w-full max-w-lg flex-col gap-8">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
+    <main className={PAGINA}>
+      <div className={`${COLUMNA_ESTRECHA} ${SEPARACION_SECCIONES}`}>
+        <h1 className={TITULO}>
           Test de convivencia
         </h1>
-        <Suspense fallback={<p className="text-sm text-zinc-500">Cargando el test…</p>}>
+        <Suspense fallback={<p className={TEXTO_SUAVE}>Cargando el test…</p>}>
           <ContenidoTest />
         </Suspense>
       </div>
@@ -53,9 +54,9 @@ async function ContenidoTest() {
 
   if (perfilCompleto === null || hecho === null || !preguntas) {
     return (
-      <p className="text-sm text-red-600">
+      <Aviso tipo="error">
         No se pudo cargar el test. Recarga la página para intentarlo de nuevo.
-      </p>
+      </Aviso>
     );
   }
 
@@ -63,10 +64,10 @@ async function ContenidoTest() {
   if (hecho) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-zinc-600 dark:text-zinc-400">
+        <Aviso tipo="exito">
           Ya has completado el test de convivencia. Tus respuestas están guardadas.
-        </p>
-        <Link href="/perfil" className="self-start font-medium text-zinc-900 underline dark:text-zinc-50">
+        </Aviso>
+        <Link href="/perfil" className={`${ENLACE} self-start`}>
           Volver a mi perfil
         </Link>
       </div>
@@ -75,7 +76,7 @@ async function ContenidoTest() {
 
   if (preguntas.length === 0) {
     return (
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-texto-suave">
         Todavía no hay preguntas en el test. Vuelve a intentarlo más tarde.
       </p>
     );

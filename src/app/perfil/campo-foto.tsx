@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState, type ChangeEvent } from "react";
 import { FOTO_TIPOS, validarFoto } from "./datos-perfil";
+import { ErrorDeCampo, ETIQUETA, TEXTO_SUAVE } from "@/components/ui";
 
 // PM-13 · Campo «Tu foto», dentro del formulario del perfil (se guarda con «Guardar cambios»).
 // Comprueba el archivo en el navegador (JPG/PNG, 5 MB) y enseña una vista previa.
@@ -43,7 +44,7 @@ export function CampoFoto({
 
   return (
     <div className="flex items-center gap-4">
-      <div className="relative size-24 shrink-0 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+      <div className="relative size-24 shrink-0 overflow-hidden rounded-full bg-melocoton">
         {fotoVisible ? (
           <Image
             src={fotoVisible}
@@ -56,7 +57,7 @@ export function CampoFoto({
         ) : (
           <span
             aria-hidden
-            className="flex size-full items-center justify-center text-3xl font-semibold text-zinc-500"
+            className="flex size-full items-center justify-center text-3xl font-bold text-marino"
           >
             {nombre.charAt(0).toUpperCase()}
           </span>
@@ -64,10 +65,10 @@ export function CampoFoto({
       </div>
 
       <div className="flex min-w-0 flex-col gap-2">
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label className={ETIQUETA}>
           {fotoUrl ? "Cambiar foto" : "Añadir foto"}
-          <span className="font-normal text-zinc-500"> (opcional)</span>
-          <span className="block font-normal text-zinc-500">JPG o PNG, máximo 5 MB.</span>
+          <span className="font-normal text-texto-suave"> (opcional)</span>
+          <span className={`block font-normal ${TEXTO_SUAVE}`}>JPG o PNG, máximo 5 MB.</span>
           <input
             type="file"
             name="foto"
@@ -75,17 +76,17 @@ export function CampoFoto({
             onChange={alElegir}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? "error-foto" : undefined}
-            className="mt-2 block w-full text-sm text-zinc-600 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-200 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-zinc-900 dark:text-zinc-400 dark:file:bg-zinc-800 dark:file:text-zinc-50"
+            className="mt-2 block w-full rounded-full text-sm font-normal text-texto-suave file:mr-3 file:min-h-12 file:cursor-pointer file:rounded-full file:border-2 file:border-solid file:border-marino file:bg-white file:px-5 file:text-base file:font-semibold file:text-marino hover:file:bg-crema focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-menta focus-visible:ring-offset-2"
           />
         </label>
 
         {error && (
-          <p id="error-foto" role="alert" className="text-sm text-red-600">
+          <ErrorDeCampo id="error-foto" role="alert">
             {error}
-          </p>
+          </ErrorDeCampo>
         )}
         {vistaPrevia && !error && (
-          <p className="text-xs text-zinc-500">
+          <p className={TEXTO_SUAVE}>
             La foto nueva se guardará al pulsar «Guardar cambios».
           </p>
         )}
