@@ -6,17 +6,25 @@ import { createClient } from "@/lib/supabase/server";
 import { FormularioBienvenida } from "./formulario-bienvenida";
 import { FormularioPrivacidad } from "./formulario-privacidad";
 import { SelectorRol } from "./selector-rol";
+import { FormularioDatos } from "./formulario-datos";
+import { FormularioFoto } from "./formulario-foto";
 import { esRolValido, etiquetaDeRol, type Rol } from "./roles";
+import { BUCKET_FOTOS, type ValoresDatos } from "./datos-perfil";
 
 export const metadata: Metadata = {
   title: "Mi perfil · PisoMatch",
 };
 
-// Datos del perfil que usa esta página. PM-13 añadirá aquí foto, presupuesto, zona, etc.
+// Datos del perfil que usa esta página.
 type Perfil = {
   nombre: string;
   rol: Rol;
+  fotoUrl: string | null; // enlace temporal (1 hora) a la foto, o null
+  datos: ValoresDatos; // lo que se rellena en «Tus datos» (PM-13)
 };
+
+// Duración del enlace temporal a la foto privada, en segundos.
+const DURACION_ENLACE_FOTO = 60 * 60;
 
 export default function PaginaPerfil() {
   return (
@@ -48,7 +56,9 @@ async function ContenidoPerfil() {
 
   const { data: fila, error } = await supabase
     .from("profiles")
-    .select("nombre, rol, acepta_privacidad")
+    .select(
+      "nombre, rol, acepta_privacidad, foto_url, descripcion, presupuesto, zona, fecha_entrada",
+    )
     .eq("id", userId)
     .maybeSingle();
 
@@ -70,8 +80,33 @@ async function ContenidoPerfil() {
     return <FormularioPrivacidad nombre={fila.nombre} />;
   }
 
-  // 4. Con perfil → ver datos y cambiar rol.
-  return <VistaPerfil perfil={{ nombre: fila.nombre, rol: fila.rol }} />;
+  // 4. Con perfil → ver y editar datos, foto y rol.
+  // La foto es privada: pedimos a Supabase un enlace temporal. Si falla (por ejemplo,
+  // porque aún no se ha ejecutado la migración 0004), se enseña la inicial y ya está.
+  let fotoUrl: string | null = null;
+  if (fila.foto_url) {
+    const { data: firmada } = await supabase.storage
+      .from(BUCKET_FOTOS)
+      .createSignedUrl(fila.foto_url, DURACION_ENLACE_FOTO);
+    fotoUrl = firmada?.signedUrl ?? null;
+  }
+
+  return (
+    <VistaPerfil
+      perfil={{
+        nombre: fila.nombre,
+        rol: fila.rol,
+        fotoUrl,
+        datos: {
+          nombre: fila.nombre,
+          descripcion: fila.descripcion ?? "",
+          presupuesto: fila.presupuesto == null ? "" : String(Number(fila.presupuesto)),
+          zona: fila.zona ?? "",
+          fecha_entrada: fila.fecha_entrada ?? "",
+        },
+      }}
+    />
+  );
 }
 
 function VistaPerfil({ perfil }: { perfil: Perfil }) {
@@ -86,7 +121,18 @@ function VistaPerfil({ perfil }: { perfil: Perfil }) {
         </p>
       </section>
 
-      {/* PM-13: aquí irá la sección «Tus datos» (foto, presupuesto, zona, fecha de entrada, descripción). */}
+      <section className="flex flex-col gap-6">
+        <div>
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+            Tus datos
+          </h2>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Así te verán los demás. El presupuesto y la zona sirven para encontrar tus matches.
+          </p>
+        </div>
+        <FormularioFoto fotoUrl={perfil.fotoUrl} nombre={perfil.nombre} />
+        <FormularioDatos valoresIniciales={perfil.datos} />
+      </section>
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
