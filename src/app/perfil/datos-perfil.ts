@@ -2,6 +2,8 @@
 // (para avisar antes de enviar) y el servidor (que vuelve a comprobarlo todo, porque
 // lo que llega del navegador no es de fiar). Así los mensajes son siempre los mismos.
 
+import { esRolValido, type Rol } from "./roles";
+
 export const NOMBRE_MAX = 60;
 export const DESCRIPCION_MAX = 500;
 export const PRESUPUESTO_MAX = 10000; // euros al mes
@@ -39,8 +41,9 @@ export const DISTRITOS_MADRID = [
 
 export type Distrito = (typeof DISTRITOS_MADRID)[number];
 
-// Lo que escribe el usuario en el formulario «Tus datos», siempre como texto.
+// Lo que escribe el usuario en el formulario del perfil (rol + «Tus datos»), siempre como texto.
 export type ValoresDatos = {
+  rol: string;
   nombre: string;
   descripcion: string;
   presupuesto: string;
@@ -53,6 +56,7 @@ export type ErroresDatos = Partial<Record<CampoDatos, string>>;
 
 // Lo que se guarda en la tabla profiles cuando todo es correcto.
 export type DatosValidos = {
+  rol: Rol;
   nombre: string;
   descripcion: string | null;
   presupuesto: number;
@@ -63,6 +67,7 @@ export type DatosValidos = {
 export function leerValoresDatos(formData: FormData): ValoresDatos {
   const texto = (campo: CampoDatos) => String(formData.get(campo) ?? "");
   return {
+    rol: texto("rol"),
     nombre: texto("nombre"),
     descripcion: texto("descripcion"),
     presupuesto: texto("presupuesto"),
@@ -82,11 +87,28 @@ function esFechaValida(valor: string) {
   return !Number.isNaN(fecha.getTime()) && fecha.toISOString().startsWith(valor);
 }
 
+// La fecha de hoy en Madrid, como AAAA-MM-DD (el formato del campo de fecha).
+// Se usa la hora de Madrid para que el navegador y el servidor den siempre el mismo día.
+export function hoyEnMadrid() {
+  // El formato «en-CA» escribe las fechas como AAAA-MM-DD.
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
 // Comprueba los datos. Devuelve los errores de cada campo, o los datos listos para guardar.
 export function validarDatosPerfil(
   valores: ValoresDatos,
 ): { errores: ErroresDatos; datos: null } | { errores: null; datos: DatosValidos } {
   const errores: ErroresDatos = {};
+
+  const rol = valores.rol;
+  if (!esRolValido(rol)) {
+    errores.rol = "Elige si buscas habitación o tienes una libre.";
+  }
 
   const nombre = valores.nombre.trim();
   if (!nombre) {
@@ -120,15 +142,19 @@ export function validarDatosPerfil(
   const fecha = valores.fecha_entrada.trim();
   if (fecha && !esFechaValida(fecha)) {
     errores.fecha_entrada = "La fecha de entrada no es válida.";
+  } else if (fecha && fecha < hoyEnMadrid()) {
+    // Las fechas AAAA-MM-DD se pueden comparar como texto: la más antigua va antes.
+    errores.fecha_entrada = "La fecha de entrada no puede ser anterior a hoy.";
   }
 
-  if (Object.keys(errores).length > 0 || !esDistrito(zona)) {
+  if (Object.keys(errores).length > 0 || !esDistrito(zona) || !esRolValido(rol)) {
     return { errores, datos: null };
   }
 
   return {
     errores: null,
     datos: {
+      rol,
       nombre,
       descripcion: descripcion || null,
       presupuesto,

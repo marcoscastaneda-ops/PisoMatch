@@ -10,23 +10,19 @@ import {
   validarDatosPerfil,
   validarFoto,
   type ErroresDatos,
-  type ValoresDatos,
 } from "./datos-perfil";
 
 // Lo que devuelve cada acción al formulario: null si todo fue bien, o un mensaje de error.
 export type EstadoFormulario = { error: string } | null;
 
-// Lo que devuelve «Tus datos» (PM-13): errores junto a cada campo y lo que escribió el
-// usuario, para no perderlo si hay errores (React vacía el formulario al enviarlo).
-export type EstadoDatos = {
+// Lo que devuelve «Guardar cambios» en el perfil: un error general, los errores de cada
+// campo (y de la foto), o que se ha guardado todo.
+export type EstadoPerfil = {
   error?: string;
   errores?: ErroresDatos;
-  valores?: ValoresDatos;
+  errorFoto?: string;
   guardado?: boolean;
 } | null;
-
-// Lo que devuelve «Tu foto»: un mensaje de error o que se ha guardado.
-export type EstadoFoto = { error?: string; guardado?: boolean } | null;
 
 const ERROR_SESION = "Tu sesión ha caducado. Vuelve a iniciar sesión.";
 
@@ -86,34 +82,6 @@ export async function crearPerfil(
   return null;
 }
 
-// Página de perfil: cambia el rol del usuario con sesión.
-export async function cambiarRol(
-  _estadoAnterior: EstadoFormulario,
-  formData: FormData,
-): Promise<EstadoFormulario> {
-  const { supabase, userId } = await usuarioConSesion();
-  if (!userId) {
-    return { error: ERROR_SESION };
-  }
-
-  const rol = formData.get("rol");
-  if (!esRolValido(rol)) {
-    return { error: "Elige si buscas habitación o tienes una libre." };
-  }
-
-  const { error } = await supabase
-    .from("profiles")
-    .update({ rol })
-    .eq("id", userId);
-
-  if (error) {
-    return { error: "No se pudo cambiar el rol. Inténtalo de nuevo." };
-  }
-
-  refresh();
-  return null;
-}
-
 // Perfiles creados antes de PM-24: marca que el usuario ha aceptado la privacidad.
 export async function aceptarPrivacidad(
   _estadoAnterior: EstadoFormulario,
@@ -141,34 +109,6 @@ export async function aceptarPrivacidad(
   return null;
 }
 
-// PM-13 · «Tus datos»: guarda nombre, descripción, presupuesto, zona y fecha de entrada.
-export async function guardarDatos(
-  _estadoAnterior: EstadoDatos,
-  formData: FormData,
-): Promise<EstadoDatos> {
-  const valores = leerValoresDatos(formData);
-
-  const { supabase, userId } = await usuarioConSesion();
-  if (!userId) {
-    return { error: ERROR_SESION, valores };
-  }
-
-  // Las mismas comprobaciones que hace el navegador, repetidas aquí.
-  const { errores, datos } = validarDatosPerfil(valores);
-  if (!datos) {
-    return { errores, valores };
-  }
-
-  const { error } = await supabase.from("profiles").update(datos).eq("id", userId);
-
-  if (error) {
-    return { error: "No se pudieron guardar tus datos. Inténtalo de nuevo.", valores };
-  }
-
-  refresh();
-  return { guardado: true };
-}
-
 // Mira los primeros bytes del archivo para confirmar que de verdad es un JPG o un PNG
 // (el tipo que dice el navegador se puede falsear cambiando la extensión).
 async function extensionReal(archivo: File): Promise<"jpg" | "png" | null> {
@@ -189,68 +129,86 @@ function faltaElBucket(error: { message?: string; code?: string }) {
 }
 
 const ERROR_SIN_BUCKET =
-  "Aún no se pueden subir fotos: falta configurar el almacenamiento. Tus demás datos sí se guardan.";
+  "Aún no se pueden subir fotos: falta configurar el almacenamiento. Quita la foto nueva para guardar el resto.";
 
-// PM-13 · «Tu foto»: sube la foto a <id del usuario>/<fecha-hora>.jpg|png, guarda esa ruta
-// en profiles.foto_url y borra la foto anterior.
-export async function cambiarFoto(
-  _estadoAnterior: EstadoFoto,
+// Perfil · «Guardar cambios»: guarda a la vez el rol, la foto (si se ha elegido una nueva)
+// y los datos (nombre, sobre ti, presupuesto, zona y fecha de entrada).
+// O se guarda todo o nada: primero se comprueba todo, luego se sube la foto y, si falla
+// guardar los datos, se borra la foto recién subida.
+// La foto va en <id del usuario>/<fecha-hora>.jpg|png; al cambiarla se borra la anterior.
+export async function guardarPerfil(
+  _estadoAnterior: EstadoPerfil,
   formData: FormData,
-): Promise<EstadoFoto> {
+): Promise<EstadoPerfil> {
   const { supabase, userId } = await usuarioConSesion();
   if (!userId) {
     return { error: ERROR_SESION };
   }
 
+  // 1. Comprobar todo antes de guardar nada (las mismas reglas que en el navegador).
+  const { errores, datos } = validarDatosPerfil(leerValoresDatos(formData));
+
+  // La foto es opcional: solo se cambia si se ha elegido un archivo.
   const archivo = formData.get("foto");
-  const errorFoto = validarFoto(archivo instanceof File ? archivo : null);
-  if (errorFoto || !(archivo instanceof File)) {
-    return { error: errorFoto ?? "Elige una foto." };
-  }
-
-  const extension = await extensionReal(archivo);
-  if (!extension) {
-    return { error: "La foto debe ser JPG o PNG." };
-  }
-
-  // Ruta de la foto anterior, para borrarla al final.
-  const { data: perfil } = await supabase
-    .from("profiles")
-    .select("foto_url")
-    .eq("id", userId)
-    .maybeSingle();
-  const rutaAnterior = perfil?.foto_url ?? null;
-
-  // Nombre nuevo cada vez: así el navegador no enseña la foto vieja que tenga guardada.
-  const ruta = `${userId}/${Date.now()}.${extension}`;
-  const { error: errorSubida } = await supabase.storage
-    .from(BUCKET_FOTOS)
-    .upload(ruta, archivo, {
-      contentType: extension === "png" ? "image/png" : "image/jpeg",
-      upsert: false,
-    });
-
-  if (errorSubida) {
-    if (faltaElBucket(errorSubida)) {
-      return { error: ERROR_SIN_BUCKET };
+  const foto = archivo instanceof File && archivo.size > 0 ? archivo : null;
+  let errorFoto: string | null = null;
+  let extension: "jpg" | "png" | null = null;
+  if (foto) {
+    errorFoto = validarFoto(foto);
+    if (!errorFoto) {
+      extension = await extensionReal(foto);
+      if (!extension) errorFoto = "La foto debe ser JPG o PNG.";
     }
-    return { error: "No se pudo subir la foto. Inténtalo de nuevo." };
   }
 
-  const { error: errorPerfil } = await supabase
+  if (!datos || errorFoto) {
+    return { errores: errores ?? undefined, errorFoto: errorFoto ?? undefined };
+  }
+
+  // 2. Subir la foto nueva, si hay. Nombre nuevo cada vez: así el navegador no enseña
+  // la foto vieja que tenga guardada.
+  let ruta: string | null = null;
+  let rutaAnterior: string | null = null;
+  if (foto && extension) {
+    const { data: perfil } = await supabase
+      .from("profiles")
+      .select("foto_url")
+      .eq("id", userId)
+      .maybeSingle();
+    rutaAnterior = perfil?.foto_url ?? null;
+
+    ruta = `${userId}/${Date.now()}.${extension}`;
+    const { error: errorSubida } = await supabase.storage
+      .from(BUCKET_FOTOS)
+      .upload(ruta, foto, {
+        contentType: extension === "png" ? "image/png" : "image/jpeg",
+        upsert: false,
+      });
+
+    if (errorSubida) {
+      return {
+        errorFoto: faltaElBucket(errorSubida)
+          ? ERROR_SIN_BUCKET
+          : "No se pudo subir la foto. Inténtalo de nuevo; no se ha guardado ningún cambio.",
+      };
+    }
+  }
+
+  // 3. Guardar los datos, el rol y (si hay) la ruta de la foto nueva, todo de una vez.
+  const { error } = await supabase
     .from("profiles")
-    .update({ foto_url: ruta })
+    .update(ruta ? { ...datos, foto_url: ruta } : datos)
     .eq("id", userId);
 
-  if (errorPerfil) {
+  if (error) {
     // No dejamos archivos sueltos si no se pudo apuntar a la foto nueva.
-    await supabase.storage.from(BUCKET_FOTOS).remove([ruta]);
-    return { error: "No se pudo guardar la foto. Inténtalo de nuevo." };
+    if (ruta) await supabase.storage.from(BUCKET_FOTOS).remove([ruta]);
+    return { error: "No se pudieron guardar los cambios. Inténtalo de nuevo." };
   }
 
-  // Borra la foto anterior (solo si es del propio usuario). Si falla, no es grave:
+  // 4. Borrar la foto anterior (solo si es del propio usuario). Si falla, no es grave:
   // la nueva ya está guardada.
-  if (rutaAnterior && rutaAnterior !== ruta && rutaAnterior.startsWith(`${userId}/`)) {
+  if (ruta && rutaAnterior && rutaAnterior !== ruta && rutaAnterior.startsWith(`${userId}/`)) {
     await supabase.storage.from(BUCKET_FOTOS).remove([rutaAnterior]);
   }
 
