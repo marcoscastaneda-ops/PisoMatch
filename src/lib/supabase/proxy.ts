@@ -50,7 +50,7 @@ export async function updateSession(request: NextRequest) {
 }
 
 // Páginas que solo se ven con la sesión iniciada (sin sesión → /login).
-const RUTAS_CON_SESION = ["/perfil"];
+const RUTAS_CON_SESION = ["/perfil", "/test"];
 // Páginas que no tienen sentido con la sesión iniciada (con sesión → /perfil).
 const RUTAS_SIN_SESION = ["/login", "/registro"];
 
