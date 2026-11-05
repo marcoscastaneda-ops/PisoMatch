@@ -101,7 +101,12 @@ export function FormularioDatos({ valoresIniciales }: { valoresIniciales: Valore
       </Campo>
 
       <Campo campo="zona" etiqueta="Zona (distrito de Madrid)" error={errores.zona}>
+        {/* Después de guardar, React vacía el formulario y lo deja con los valores «por defecto».
+            En los campos de texto React actualiza ese valor, pero en una lista desplegable no:
+            volvería a «Elige un distrito…» aunque la zona se haya guardado. Con `key`, la lista
+            se crea de nuevo cada vez que cambia la zona guardada y aparece la correcta. */}
         <select
+          key={valores.zona}
           {...propsDeError("zona")}
           name="zona"
           required
@@ -137,7 +142,8 @@ export function FormularioDatos({ valoresIniciales }: { valoresIniciales: Valore
           {estado.error}
         </p>
       )}
-      {estado?.guardado && !guardando && (
+      {/* No decir «guardados» si el navegador acaba de frenar un envío con errores. */}
+      {estado?.guardado && !guardando && !erroresNavegador && (
         <p role="status" className="text-sm text-green-700 dark:text-green-400">
           Datos guardados.
         </p>
