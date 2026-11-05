@@ -6,10 +6,9 @@ import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { FormularioBienvenida } from "./formulario-bienvenida";
 import { FormularioPrivacidad } from "./formulario-privacidad";
-import { SelectorRol } from "./selector-rol";
-import { FormularioDatos } from "./formulario-datos";
-import { FormularioFoto } from "./formulario-foto";
-import { esRolValido, etiquetaDeRol, type Rol } from "./roles";
+import { FormularioPerfil } from "./formulario-perfil";
+import { yaHizoElTest } from "@/app/test/datos";
+import { esRolValido, type Rol } from "./roles";
 import { BUCKET_FOTOS, type ValoresDatos } from "./datos-perfil";
 
 export const metadata: Metadata = {
@@ -21,7 +20,8 @@ type Perfil = {
   nombre: string;
   rol: Rol;
   fotoUrl: string | null; // enlace temporal (1 hora) a la foto, o null
-  datos: ValoresDatos; // lo que se rellena en «Tus datos» (PM-13)
+  datos: ValoresDatos & { rol: Rol }; // lo que se rellena en «Tu rol» y «Tus datos» (PM-13)
+  hizoElTest: boolean; // para el botón «Hacer el test» / «Repetir el test»
 };
 
 // Duración del enlace temporal a la foto privada, en segundos.
@@ -92,13 +92,18 @@ async function ContenidoPerfil() {
     fotoUrl = firmada?.signedUrl ?? null;
   }
 
+  // Si no se puede comprobar (null), se enseña «Hacer el test», que es lo más prudente.
+  const hizoElTest = (await yaHizoElTest(supabase, userId)) === true;
+
   return (
     <VistaPerfil
       perfil={{
         nombre: fila.nombre,
         rol: fila.rol,
         fotoUrl,
+        hizoElTest,
         datos: {
+          rol: fila.rol,
           nombre: fila.nombre,
           descripcion: fila.descripcion ?? "",
           presupuesto: fila.presupuesto == null ? "" : String(Number(fila.presupuesto)),
@@ -113,27 +118,12 @@ async function ContenidoPerfil() {
 function VistaPerfil({ perfil }: { perfil: Perfil }) {
   return (
     <>
-      <section className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-          Hola, {perfil.nombre}
-        </h1>
-        <p className="text-zinc-600 dark:text-zinc-400">
-          Ahora mismo: <strong>{etiquetaDeRol(perfil.rol)}</strong>
-        </p>
-      </section>
+      <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
+        Hola, {perfil.nombre}
+      </h1>
 
-      <section className="flex flex-col gap-6">
-        <div>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-            Tus datos
-          </h2>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Así te verán los demás. El presupuesto y la zona sirven para encontrar tus matches.
-          </p>
-        </div>
-        <FormularioFoto fotoUrl={perfil.fotoUrl} nombre={perfil.nombre} />
-        <FormularioDatos valoresIniciales={perfil.datos} />
-      </section>
+      {/* «Tu rol» y «Tus datos», con un solo botón «Guardar cambios». */}
+      <FormularioPerfil valoresIniciales={perfil.datos} fotoUrl={perfil.fotoUrl} />
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
@@ -146,7 +136,7 @@ function VistaPerfil({ perfil }: { perfil: Perfil }) {
           href="/test"
           className="self-start rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
         >
-          Test
+          {perfil.hizoElTest ? "Repetir el test" : "Hacer el test"}
         </Link>
         <Link
           href="/test/respuestas"
@@ -169,13 +159,6 @@ function VistaPerfil({ perfil }: { perfil: Perfil }) {
         >
           Ver mi afinidad
         </Link>
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-          Tu rol
-        </h2>
-        <SelectorRol rolActual={perfil.rol} />
       </section>
     </>
   );
