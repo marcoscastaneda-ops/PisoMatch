@@ -10,6 +10,7 @@ Equipo de estudiantes; explica los pasos en lenguaje sencillo y avisa cuando hay
 
 ## Estructura
 - `src/app/` – páginas.
+  - `page.tsx` – portada pública (PM-41): qué es PisoMatch y el botón «Empezar» (→ `/registro`) visibles sin scroll en el móvil, un ejemplo de la lista de afinidad (nombres inventados, marcado «Ejemplo»), «Cómo funciona» en 3 pasos con iconos y el lema al final. Sus textos solo prometen lo que la web ya hace: si cambia el flujo (p. ej. matches de PM-48), actualizar los pasos.
   - `registro/` – crear cuenta (PM-7). `actions.ts` es la Server Action que valida y llama a Supabase.
   - `login/` – iniciar sesión (PM-8). `actions.ts` tiene `iniciarSesion` y `cerrarSesion`.
   - `perfil/` – bienvenida y perfil del usuario (PM-12). Orden: «Hola, [nombre]» → «Tu rol» → «Tus datos» (PM-13) → test → afinidad. «Tu rol» y «Tus datos» (con la foto, `campo-foto.tsx`) son un único formulario, `formulario-perfil.tsx`; las reglas de cada campo y la lista de distritos están en `datos-perfil.ts`, que usan a la vez el navegador y el servidor.
