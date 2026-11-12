@@ -155,3 +155,6 @@ vite.config.ts.timestamp-*
 .pnpm-debug.log*
 .vercel
 next-env.d.ts
+
+# Archivos comprimidos de entregas (p. ej. el zip de PM-41): no se suben a Git
+*.zip
