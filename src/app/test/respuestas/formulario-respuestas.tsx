@@ -11,6 +11,17 @@ import {
 } from "../imprescindibles";
 import { actualizarRespuestas } from "./actions";
 import type { RespuestaGuardada } from "./datos";
+import {
+  Aviso,
+  BOTON_PRINCIPAL,
+  CAMPO,
+  ETIQUETA,
+  ETIQUETA_MAYUSCULAS,
+  ETIQUETA_SUGERENCIA,
+  GRUPO_CAMPO,
+  TARJETA,
+  TARJETA_OPCION,
+} from "@/components/ui";
 
 // Una pregunta del test junto con lo que el usuario tiene guardado.
 export type PreguntaConRespuesta = Pregunta & RespuestaGuardada;
@@ -62,14 +73,14 @@ export function FormularioRespuestas({ preguntas }: { preguntas: PreguntaConResp
   }
 
   return (
-    <form onSubmit={enviar} className="flex flex-col gap-10">
-      <p aria-live="polite" className="text-sm text-zinc-600 dark:text-zinc-400">
+    <form onSubmit={enviar} className="flex flex-col gap-8 md:gap-12">
+      <p aria-live="polite" className="text-sm font-semibold">
         Imprescindibles: {imprescindibles.length} de {MAX_IMPRESCINDIBLES}
       </p>
 
       {bloques.map((bloque) => (
-        <section key={bloque.nombre} className="flex flex-col gap-6">
-          <h2 className="text-sm font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <section key={bloque.nombre} className="flex flex-col gap-4">
+          <h2 className={ETIQUETA_MAYUSCULAS}>
             {bloque.nombre}
           </h2>
 
@@ -80,10 +91,10 @@ export function FormularioRespuestas({ preguntas }: { preguntas: PreguntaConResp
             return (
               <fieldset
                 key={pregunta.id}
-                className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950"
+                className={`${TARJETA} flex flex-col gap-3`}
               >
                 <legend className="sr-only">{pregunta.texto}</legend>
-                <p aria-hidden className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                <p aria-hidden className="mb-1 text-lg leading-[1.3] font-semibold">
                   {pregunta.texto}
                 </p>
 
@@ -92,7 +103,7 @@ export function FormularioRespuestas({ preguntas }: { preguntas: PreguntaConResp
                   return (
                     <label
                       key={valor}
-                      className="flex cursor-pointer items-start gap-3 rounded-xl border border-zinc-200 p-3 has-[:checked]:border-zinc-900 has-[:checked]:ring-1 has-[:checked]:ring-zinc-900 dark:border-zinc-800 dark:has-[:checked]:border-zinc-100 dark:has-[:checked]:ring-zinc-100"
+                      className={TARJETA_OPCION}
                     >
                       <input
                         type="radio"
@@ -103,18 +114,18 @@ export function FormularioRespuestas({ preguntas }: { preguntas: PreguntaConResp
                           setRespuestas({ ...respuestas, [pregunta.id]: valor });
                           marcarCambio();
                         }}
-                        className="mt-1"
+                        className="opcion"
                       />
-                      <span className="text-zinc-900 dark:text-zinc-50">{opcion}</span>
+                      <span>{opcion}</span>
                     </label>
                   );
                 })}
 
                 {/* PM-14: cuánto le importa esta pregunta. */}
-                <div className="mt-1 flex flex-col gap-1">
+                <div className={`${GRUPO_CAMPO} mt-2`}>
                   <label
                     htmlFor={`importancia-${pregunta.id}`}
-                    className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+                    className={ETIQUETA}
                   >
                     ¿Cuánto te importa?
                   </label>
@@ -129,7 +140,7 @@ export function FormularioRespuestas({ preguntas }: { preguntas: PreguntaConResp
                       });
                       marcarCambio();
                     }}
-                    className="self-start rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
+                    className={CAMPO}
                   >
                     {OPCIONES_IMPORTANCIA.map((opcion) => (
                       <option key={opcion.valor} value={opcion.valor}>
@@ -140,10 +151,10 @@ export function FormularioRespuestas({ preguntas }: { preguntas: PreguntaConResp
                 </div>
 
                 {/* PM-16: «Es imprescindible para mí». Nunca se marca sola. */}
-                <div className="mt-1 flex flex-col gap-1">
+                <div className={`${GRUPO_CAMPO} mt-2`}>
                   <label
-                    className={`flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 ${
-                      casillaBloqueada ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                    className={`flex min-h-12 items-center gap-3 font-semibold ${
+                      casillaBloqueada ? "cursor-not-allowed text-desactivado-texto" : "cursor-pointer"
                     }`}
                   >
                     <input
@@ -160,16 +171,15 @@ export function FormularioRespuestas({ preguntas }: { preguntas: PreguntaConResp
                         );
                         marcarCambio();
                       }}
+                      className="casilla"
                     />
                     Es imprescindible para mí
                   </label>
                   {pregunta.imprescindibleSugerida && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">Suele ser imprescindible</p>
+                    <p className={ETIQUETA_SUGERENCIA}>Suele ser imprescindible</p>
                   )}
                   {casillaBloqueada && (
-                    <p className="text-xs text-amber-700 dark:text-amber-400">
-                      {AVISO_LIMITE_IMPRESCINDIBLES}
-                    </p>
+                    <Aviso tipo="aviso">{AVISO_LIMITE_IMPRESCINDIBLES}</Aviso>
                   )}
                 </div>
               </fieldset>
@@ -178,24 +188,24 @@ export function FormularioRespuestas({ preguntas }: { preguntas: PreguntaConResp
         </section>
       ))}
 
-      <div className="sticky bottom-0 flex flex-col gap-3 border-t border-zinc-200 bg-zinc-50 py-4 dark:border-zinc-800 dark:bg-black">
+      <div className="sticky bottom-0 -mx-4 flex flex-col gap-3 border-t border-borde bg-crema px-4 py-4 sm:-mx-6 sm:px-6">
         {estado && "error" in estado && (
-          <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200">
+          <Aviso tipo="error" role="alert">
             {estado.error}
-          </p>
+          </Aviso>
         )}
         {estado && "guardado" in estado && !hayCambiosSinGuardar && !guardando && (
-          <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-800 dark:bg-green-950 dark:text-green-200">
+          <Aviso tipo="exito" role="status">
             Cambios guardados. Tu afinidad ya tiene en cuenta las nuevas respuestas.{" "}
-            <Link href="/afinidad" className="font-medium underline">
+            <Link href="/afinidad" className="font-semibold underline">
               Ver mi afinidad
             </Link>
-          </p>
+          </Aviso>
         )}
         <button
           type="submit"
           disabled={guardando}
-          className="self-start rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className={BOTON_PRINCIPAL}
         >
           {guardando ? "Guardando…" : "Guardar cambios"}
         </button>

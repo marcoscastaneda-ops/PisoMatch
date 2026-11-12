@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { aceptarPrivacidad } from "./actions";
 import { CasillaPrivacidad } from "./casilla-privacidad";
+import { Aviso, BOTON_PRINCIPAL, TITULO } from "@/components/ui";
 
 // Para perfiles creados antes de PM-24 que aún no han aceptado la política.
 export function FormularioPrivacidad({ nombre }: { nombre: string }) {
@@ -10,28 +11,20 @@ export function FormularioPrivacidad({ nombre }: { nombre: string }) {
 
   return (
     <form action={accion} className="flex flex-col gap-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Hola, {nombre}
-        </h2>
-        <p className="mt-1 text-zinc-600 dark:text-zinc-400">
-          Antes de seguir, lee y acepta cómo usamos tus datos.
-        </p>
+      <div className="flex flex-col gap-2">
+        <h2 className={TITULO}>Hola, {nombre}</h2>
+        <p className="text-texto-suave">Antes de seguir, lee y acepta cómo usamos tus datos.</p>
       </div>
 
       <CasillaPrivacidad />
 
       {estado?.error && (
-        <p role="alert" className="text-sm text-red-600">
+        <Aviso tipo="error" role="alert">
           {estado.error}
-        </p>
+        </Aviso>
       )}
 
-      <button
-        type="submit"
-        disabled={guardando}
-        className="rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900"
-      >
+      <button type="submit" disabled={guardando} className={BOTON_PRINCIPAL}>
         {guardando ? "Guardando…" : "Aceptar y continuar"}
       </button>
     </form>

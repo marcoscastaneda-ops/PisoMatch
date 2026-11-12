@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FormularioLogin } from "./formulario-login";
+import { COLUMNA_ESTRECHA, ENLACE_EN_TEXTO, PAGINA, TARJETA, TITULO } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Iniciar sesión · PisoMatch",
@@ -9,22 +10,20 @@ export const metadata: Metadata = {
 // Si ya hay sesión, el proxy (src/lib/supabase/proxy.ts) lleva a /perfil antes de llegar aquí.
 export default function PaginaLogin() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center bg-zinc-50 px-6 py-12 dark:bg-black">
-      <div className="flex w-full max-w-sm flex-col gap-6">
+    <main className={`${PAGINA} items-center`}>
+      <div className={`${COLUMNA_ESTRECHA} gap-6 md:gap-8`}>
         <div className="flex flex-col gap-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Inicia sesión
-          </h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Entra con tu correo y tu contraseña.
-          </p>
+          <h1 className={TITULO}>Inicia sesión</h1>
+          <p className="text-texto-suave">Entra con tu correo y tu contraseña.</p>
         </div>
 
-        <FormularioLogin />
+        <div className={TARJETA}>
+          <FormularioLogin />
+        </div>
 
-        <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-center text-sm text-texto-suave">
           ¿No tienes cuenta?{" "}
-          <Link href="/registro" className="font-medium text-zinc-900 underline dark:text-zinc-50">
+          <Link href="/registro" className={ENLACE_EN_TEXTO}>
             Regístrate
           </Link>
         </p>
