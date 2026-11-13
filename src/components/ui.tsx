@@ -18,6 +18,8 @@ export const PAGINA = "flex flex-1 justify-center px-4 py-8 sm:px-6 md:py-12";
 // Columna de formularios y test: máximo 480 px. Añade la separación que toque:
 // entre secciones, SEPARACION_SECCIONES; entre campos de un formulario, gap-4 (16 px).
 export const COLUMNA_ESTRECHA = "flex w-full max-w-[480px] flex-col";
+// Columna de listas de tarjetas (candidatos): máximo 1120 px en escritorio.
+export const COLUMNA_ANCHA = "flex w-full max-w-[1120px] flex-col";
 // Separación entre secciones: 32 px en móvil y 48 px en escritorio.
 export const SEPARACION_SECCIONES = "gap-8 md:gap-12";
 
@@ -82,6 +84,10 @@ export const TARJETA_OPCION =
 // ─── Tarjetas ────────────────────────────────────────────────────────────────
 
 export const TARJETA = "rounded-lg border border-borde bg-white p-4 shadow-suave md:p-6";
+// Foto arriba de una tarjeta de candidato: radio 16 px (fondo melocotón si no hay foto).
+export const FOTO_TARJETA = "relative aspect-[4/3] w-full overflow-hidden rounded-[16px] bg-melocoton";
+// Nombre dentro de una tarjeta: Poppins 600 18 px.
+export const NOMBRE_TARJETA = "text-lg leading-[1.3] font-semibold text-marino";
 
 // ─── Componentes ─────────────────────────────────────────────────────────────
 

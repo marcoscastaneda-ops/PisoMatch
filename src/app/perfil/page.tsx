@@ -172,6 +172,22 @@ function VistaPerfil({ perfil }: { perfil: Perfil }) {
           Ver mi afinidad
         </Link>
       </section>
+
+      <section className={`${TARJETA} flex flex-col gap-3`}>
+        <h2 className={SUBTITULO}>
+          Candidatos
+        </h2>
+        <p className="text-texto-suave">
+          Personas compatibles contigo, sin quienes chocan con tus imprescindibles. Puedes
+          filtrar por zona y presupuesto.
+        </p>
+        <Link
+          href="/candidatos"
+          className={`${BOTON_SECUNDARIO} mt-1 w-full sm:w-auto sm:self-start`}
+        >
+          Ver candidatos
+        </Link>
+      </section>
     </>
   );
 }
