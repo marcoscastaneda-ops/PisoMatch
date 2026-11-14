@@ -6,10 +6,10 @@ import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { yaHizoElTest } from "@/app/test/datos";
 import { esRolValido, type Rol } from "@/app/perfil/roles";
-import { BUCKET_FOTOS } from "@/app/perfil/datos-perfil";
 import { FiltrosCandidatos } from "./filtros-candidatos";
-import { TarjetaCandidato, type Candidato } from "./tarjeta-candidato";
-import { hayFiltros, leerFiltros, type Filtros } from "./filtros";
+import { ListaCandidatos } from "./lista-candidatos";
+import { cargarCandidatos } from "./datos";
+import { hayFiltros, leerFiltros } from "./filtros";
 import {
   Aviso,
   COLUMNA_ANCHA,
@@ -23,9 +23,6 @@ import {
 export const metadata: Metadata = {
   title: "Candidatos · PisoMatch",
 };
-
-// Duración del enlace temporal a cada foto privada, en segundos (igual que en /perfil).
-const DURACION_ENLACE_FOTO = 60 * 60;
 
 type ParametrosUrl = { [clave: string]: string | string[] | undefined };
 
@@ -41,7 +38,7 @@ export default function PaginaCandidatos({
           <h1 className={TITULO}>Candidatos</h1>
           <p className="text-texto-suave">
             Personas con las que podrías convivir, de más a menos afinidad. No salen quienes
-            chocan con tus imprescindibles.
+            chocan con tus imprescindibles. Si a los dos os interesa convivir, es un match.
           </p>
         </section>
         <Suspense fallback={<p className={TEXTO_SUAVE}>Buscando candidatos…</p>}>
@@ -120,97 +117,21 @@ async function ContenidoCandidatos({ searchParams }: { searchParams: Promise<Par
       {candidatos === null ? (
         <MensajeError />
       ) : (
-        <ListaCandidatos candidatos={candidatos} miRol={miRol} filtros={filtros} />
+        <ListaCandidatos
+          candidatos={candidatos}
+          miRol={miRol}
+          conFiltros={hayFiltros(filtros)}
+        />
       )}
-      <Link href="/perfil" className={`${ENLACE} self-start`}>
-        Volver a mi perfil
-      </Link>
+      <div className="flex flex-wrap gap-x-6 gap-y-3">
+        <Link href="/matches" className={ENLACE}>
+          Mis matches
+        </Link>
+        <Link href="/perfil" className={ENLACE}>
+          Volver a mi perfil
+        </Link>
+      </div>
     </>
-  );
-}
-
-// Datos de cada candidato (profiles es visible para usuarios con sesión) y enlaces
-// temporales a sus fotos, todos de una vez. Devuelve null si algo falla.
-async function cargarCandidatos(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  filas: { usuario_id: string; afinidad: number | null }[],
-): Promise<Candidato[] | null> {
-  const ids = filas.map((fila) => fila.usuario_id);
-  if (ids.length === 0) return [];
-
-  const { data: perfiles, error } = await supabase
-    .from("profiles")
-    .select("id, nombre, rol, zona, presupuesto, foto_url")
-    .in("id", ids);
-  if (error || !perfiles) return null;
-
-  // Si fallan los enlaces de las fotos, se enseña la inicial y ya está.
-  const rutasFotos = perfiles.map((perfil) => perfil.foto_url).filter((ruta): ruta is string => !!ruta);
-  const enlaces = new Map<string, string>();
-  if (rutasFotos.length > 0) {
-    const { data: firmadas } = await supabase.storage
-      .from(BUCKET_FOTOS)
-      .createSignedUrls(rutasFotos, DURACION_ENLACE_FOTO);
-    firmadas?.forEach((firmada) => {
-      if (firmada.path && firmada.signedUrl) enlaces.set(firmada.path, firmada.signedUrl);
-    });
-  }
-
-  const porId = new Map(perfiles.map((perfil) => [perfil.id, perfil]));
-
-  // Se mantiene el orden de la base de datos: de mayor a menor afinidad.
-  return filas.flatMap((fila) => {
-    const perfil = porId.get(fila.usuario_id);
-    if (!perfil || fila.afinidad === null || !esRolValido(perfil.rol)) return [];
-    return [
-      {
-        id: perfil.id,
-        nombre: perfil.nombre,
-        rol: perfil.rol,
-        zona: perfil.zona || null,
-        presupuesto: perfil.presupuesto == null ? null : Number(perfil.presupuesto),
-        fotoUrl: perfil.foto_url ? (enlaces.get(perfil.foto_url) ?? null) : null,
-        afinidad: fila.afinidad,
-      },
-    ];
-  });
-}
-
-function ListaCandidatos({
-  candidatos,
-  miRol,
-  filtros,
-}: {
-  candidatos: Candidato[];
-  miRol: Rol;
-  filtros: Filtros;
-}) {
-  if (candidatos.length === 0) {
-    return hayFiltros(filtros) ? (
-      <p className="text-texto-suave">
-        Nadie cumple estos filtros. Prueba con otros o pulsa «Quitar filtros».
-      </p>
-    ) : (
-      <p className="text-texto-suave">
-        Todavía no hay candidatos compatibles. Vuelve en unos días.
-      </p>
-    );
-  }
-
-  return (
-    <section className="flex flex-col gap-4" aria-label="Lista de candidatos">
-      <p className={TEXTO_SUAVE} role="status">
-        {candidatos.length === 1 ? "1 candidato" : `${candidatos.length} candidatos`}
-      </p>
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {candidatos.map((candidato) => (
-          <li key={candidato.id}>
-            {/* PM-36 añadirá aquí acciones={…} con «Me interesa». */}
-            <TarjetaCandidato candidato={candidato} miRol={miRol} />
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }
 
