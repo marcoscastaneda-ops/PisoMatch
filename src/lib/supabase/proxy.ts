@@ -52,7 +52,7 @@ export async function updateSession(request: NextRequest) {
 // Páginas que solo se ven con la sesión iniciada (sin sesión → /login).
 // La comparación es exacta: "/test/respuestas" está protegida aunque "/test" no lo esté.
 // "/test" no está aquí a propósito: sin sesión se hace el test sin cuenta (PM-23).
-const RUTAS_CON_SESION = ["/perfil", "/test/respuestas", "/afinidad", "/candidatos"];
+const RUTAS_CON_SESION = ["/perfil", "/test/respuestas", "/afinidad", "/candidatos", "/matches"];
 // Páginas que no tienen sentido con la sesión iniciada (con sesión → /perfil).
 const RUTAS_SIN_SESION = ["/login", "/registro"];
 
