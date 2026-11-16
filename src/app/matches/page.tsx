@@ -16,6 +16,7 @@ import {
   BOTON_PRINCIPAL,
   COLUMNA_ANCHA,
   ENLACE,
+  ENLACE_EN_TEXTO,
   InsigniaAfinidad,
   NOMBRE_TARJETA,
   PAGINA,
@@ -90,6 +91,10 @@ async function ContenidoMatches() {
     return <MensajeError />;
   }
 
+  // 4. Correo de contacto de cada match (PM-39, migración 0009). La base de datos solo
+  //    lo da si el match es mutuo. Si falla, las tarjetas se ven igual, con un aviso.
+  const correos = await cargarCorreos(supabase, matches.length);
+
   return (
     <>
       {matches.length === 0 ? (
@@ -110,7 +115,11 @@ async function ContenidoMatches() {
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {matches.map((match) => (
               <li key={match.id}>
-                <TarjetaMatch match={match} miRol={miRol} />
+                <TarjetaMatch
+                  match={match}
+                  miRol={miRol}
+                  correo={correos === null ? null : (correos.get(match.id) ?? null)}
+                />
               </li>
             ))}
           </ul>
@@ -130,8 +139,32 @@ async function ContenidoMatches() {
   );
 }
 
-// Tarjeta de un match: foto, nombre, rol y afinidad. Nada más de su perfil.
-function TarjetaMatch({ match, miRol }: { match: Candidato; miRol: Rol }) {
+// Correos de mis matches (función correos_de_mis_matches, migración 0009), por id.
+// Devuelve null si no se pudieron cargar.
+async function cargarCorreos(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  cuantosMatches: number,
+): Promise<Map<string, string> | null> {
+  if (cuantosMatches === 0) return new Map();
+  const { data, error } = await supabase.rpc("correos_de_mis_matches");
+  if (error || !Array.isArray(data)) return null;
+  return new Map(
+    (data as { usuario_id: string; correo: string | null }[])
+      .filter((fila) => !!fila.correo)
+      .map((fila) => [fila.usuario_id, fila.correo as string]),
+  );
+}
+
+// Tarjeta de un match: foto, nombre, rol, afinidad y correo (PM-39). Nada más de su perfil.
+function TarjetaMatch({
+  match,
+  miRol,
+  correo,
+}: {
+  match: Candidato;
+  miRol: Rol;
+  correo: string | null;
+}) {
   return (
     <article className={`${TARJETA} flex h-full flex-col gap-4`}>
       <FotoCandidato nombre={match.nombre} fotoUrl={match.fotoUrl} />
@@ -145,7 +178,20 @@ function TarjetaMatch({ match, miRol }: { match: Candidato; miRol: Rol }) {
         <span className="font-semibold">Rol: </span>
         {etiquetaRolCandidato(match.rol, miRol)}
       </p>
-      {/* TODO PM-39: aquí irán el correo y los datos de contacto del match. */}
+      {correo ? (
+        <p className={TEXTO_SUAVE}>
+          <span className="font-semibold">Correo: </span>
+          <a href={`mailto:${correo}`} className={`${ENLACE_EN_TEXTO} break-all`}>
+            {correo}
+          </a>
+          <br />
+          Escríbele para conoceros y organizar una visita al piso.
+        </p>
+      ) : (
+        <p className={TEXTO_SUAVE}>
+          No hemos podido cargar su correo. Recarga la página para intentarlo de nuevo.
+        </p>
+      )}
     </article>
   );
 }
