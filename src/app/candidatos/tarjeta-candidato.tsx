@@ -25,9 +25,35 @@ const SIN_INDICAR = "Sin indicar";
 // Cómo se describe el rol del candidato, según quién mira (decisión del PO en PM-35):
 // un inquilino ve «Tiene habitación» / «También busca piso»; un anfitrión solo ve
 // inquilinos, y para él son «Busca habitación».
-function etiquetaRolCandidato(rolCandidato: Rol, miRol: Rol) {
+// También la usa «Mis matches» (PM-36).
+export function etiquetaRolCandidato(rolCandidato: Rol, miRol: Rol) {
   if (miRol === "anfitrion") return "Busca habitación";
   return rolCandidato === "anfitrion" ? "Tiene habitación" : "También busca piso";
+}
+
+// Foto arriba de la tarjeta, o la inicial si no tiene. También la usa «Mis matches» (PM-36).
+export function FotoCandidato({ nombre, fotoUrl }: { nombre: string; fotoUrl: string | null }) {
+  return (
+    <div className={FOTO_TARJETA}>
+      {fotoUrl ? (
+        <Image
+          src={fotoUrl}
+          alt={`Foto de ${nombre}`}
+          fill
+          unoptimized
+          sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
+          className="object-cover"
+        />
+      ) : (
+        <span
+          aria-hidden
+          className="flex size-full items-center justify-center text-5xl font-bold text-marino"
+        >
+          {nombre.charAt(0).toUpperCase()}
+        </span>
+      )}
+    </div>
+  );
 }
 
 export function TarjetaCandidato({
@@ -37,7 +63,7 @@ export function TarjetaCandidato({
 }: {
   candidato: Candidato;
   miRol: Rol;
-  // Hueco para botones al final de la tarjeta (p. ej. «Me interesa» de PM-36). Vacío por ahora.
+  // Botones al final de la tarjeta: «Me interesa» y «Descartar» (PM-36).
   acciones?: ReactNode;
 }) {
   const presupuesto =
@@ -47,25 +73,7 @@ export function TarjetaCandidato({
 
   return (
     <article className={`${TARJETA} flex h-full flex-col gap-4`}>
-      <div className={FOTO_TARJETA}>
-        {candidato.fotoUrl ? (
-          <Image
-            src={candidato.fotoUrl}
-            alt={`Foto de ${candidato.nombre}`}
-            fill
-            unoptimized
-            sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
-            className="object-cover"
-          />
-        ) : (
-          <span
-            aria-hidden
-            className="flex size-full items-center justify-center text-5xl font-bold text-marino"
-          >
-            {candidato.nombre.charAt(0).toUpperCase()}
-          </span>
-        )}
-      </div>
+      <FotoCandidato nombre={candidato.nombre} fotoUrl={candidato.fotoUrl} />
 
       <div className="flex items-start justify-between gap-3">
         <h2 className={`${NOMBRE_TARJETA} min-w-0 break-words`}>{candidato.nombre}</h2>
