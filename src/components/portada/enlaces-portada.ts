@@ -14,8 +14,8 @@ export type EnlacesPortada = {
 
 export const ENLACES_SIN_SESION: EnlacesPortada = {
   conSesion: false,
-  // TODO PM-23: cuando exista el test sin registro, «Haz el test» debe llevar ahí.
-  test: "/registro",
+  // Test sin cuenta (PM-23): las respuestas se quedan en el navegador hasta registrarse.
+  test: "/test",
   // TODO PM-23: revisar también los caminos cuando exista el test sin registro.
   caminos: "/registro",
 };

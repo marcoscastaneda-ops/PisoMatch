@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Aviso, COLUMNA_ESTRECHA, ENLACE, PAGINA, SEPARACION_SECCIONES, TEXTO_SUAVE, TITULO } from "@/components/ui";
 import { cargarPreguntas, perfilEstaCompleto, yaHizoElTest } from "./datos";
 import { CuestionarioTest } from "./cuestionario-test";
+import { VistaSinCuenta } from "./vista-sin-cuenta";
 
 export const metadata: Metadata = {
   title: "Test de convivencia · PisoMatch",
@@ -36,9 +37,18 @@ async function ContenidoTest() {
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
 
-  // 1. Sin sesión → a iniciar sesión.
+  // 1. Sin sesión → test sin cuenta (PM-23): las respuestas se quedan en el navegador.
+  // Leer las preguntas sin sesión necesita la migración 0010.
   if (!userId) {
-    redirect("/login");
+    const preguntas = await cargarPreguntas(supabase);
+    if (!preguntas || preguntas.length === 0) {
+      return (
+        <Aviso tipo="error">
+          No se pudo cargar el test. Recarga la página para intentarlo de nuevo.
+        </Aviso>
+      );
+    }
+    return <VistaSinCuenta preguntas={preguntas} />;
   }
 
   // 2. Perfil sin completar → a /perfil, que muestra la bienvenida o la privacidad.
