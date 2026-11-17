@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { FormularioBienvenida } from "./formulario-bienvenida";
 import { FormularioPrivacidad } from "./formulario-privacidad";
 import { FormularioPerfil } from "./formulario-perfil";
+import { GuardarTestSinCuenta } from "./guardar-test-sin-cuenta";
 import { yaHizoElTest } from "@/app/test/datos";
 import { esRolValido, type Rol } from "./roles";
 import { BUCKET_FOTOS, type ValoresDatos } from "./datos-perfil";
@@ -144,6 +145,8 @@ function VistaPerfil({ perfil }: { perfil: Perfil }) {
         <p className="text-texto-suave">
           Cuéntanos cómo vives para encontrar compañeros compatibles.
         </p>
+        {/* PM-23: guarda en la cuenta el test hecho sin cuenta en este navegador, si lo hay. */}
+        <GuardarTestSinCuenta cuentaSinTest={!perfil.hizoElTest} />
         <Link
           href="/test"
           className={`${BOTON_SECUNDARIO} mt-1 w-full sm:w-auto sm:self-start`}

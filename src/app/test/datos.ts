@@ -7,6 +7,7 @@ type ClienteSupabase = Awaited<ReturnType<typeof createClient>>;
 // Una pregunta del test, lista para enseñar. El valor de cada opción es su posición + 1.
 export type Pregunta = {
   id: number;
+  orden: number; // posición en el test (1 a 15); el resumen sin cuenta (PM-23) la usa
   bloque: string; // nombre del bloque que ve el usuario, ej. «Tu rutina»
   texto: string;
   opciones: string[];
@@ -61,6 +62,7 @@ export async function cargarPreguntas(supabase: ClienteSupabase): Promise<Pregun
 
   return data.map((fila) => ({
     id: fila.id,
+    orden: fila.orden,
     bloque: NOMBRES_BLOQUE[fila.bloque] ?? fila.bloque,
     texto: fila.texto,
     opciones: Array.isArray(fila.opciones) ? fila.opciones.map(String) : [],

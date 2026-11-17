@@ -15,6 +15,7 @@ import {
   MAX_IMPRESCINDIBLES,
   VALOR_IMPRESCINDIBLE,
 } from "./imprescindibles";
+import { crearTestSinCuenta, type TestSinCuenta } from "./test-sin-cuenta";
 import {
   Aviso,
   BOTON_PRINCIPAL,
@@ -32,8 +33,16 @@ import {
 // El test, una pregunta cada vez. Las respuestas se guardan en el navegador
 // (estado `respuestas`) hasta pulsar «Finalizar»; así no se pierden al ir atrás
 // ni si falla el guardado.
-export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
-  const [estado, accion, guardando] = useActionState(guardarRespuestas, null);
+// PM-23: sin cuenta se pasa `alFinalizarSinCuenta`, y «Finalizar» entrega las respuestas
+// a esa función (que las guarda en el navegador) en vez de enviarlas a Supabase.
+export function CuestionarioTest({
+  preguntas,
+  alFinalizarSinCuenta,
+}: {
+  preguntas: Pregunta[];
+  alFinalizarSinCuenta?: (test: TestSinCuenta) => void;
+}) {
+  const [estado, accionConCuenta, guardando] = useActionState(guardarRespuestas, null);
   const [indice, setIndice] = useState(0);
   // id de la pregunta → valor elegido (1, 2, 3…)
   const [respuestas, setRespuestas] = useState<Record<number, number>>({});
@@ -46,6 +55,14 @@ export function CuestionarioTest({ preguntas }: { preguntas: Pregunta[] }) {
   if (estado && "guardado" in estado) {
     return <ConfirmacionTest />;
   }
+
+  // Sin cuenta: nada viaja al servidor; se junta lo elegido y se entrega a la página.
+  const accion = alFinalizarSinCuenta
+    ? () =>
+        alFinalizarSinCuenta(
+          crearTestSinCuenta(preguntas, respuestas, importanciaDe, imprescindibles),
+        )
+    : accionConCuenta;
 
   const total = preguntas.length;
   const pregunta = preguntas[indice];
