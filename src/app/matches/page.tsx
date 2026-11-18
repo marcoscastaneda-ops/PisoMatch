@@ -6,11 +6,7 @@ import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { esRolValido, type Rol } from "@/app/perfil/roles";
 import { cargarCandidatos } from "@/app/candidatos/datos";
-import {
-  FotoCandidato,
-  etiquetaRolCandidato,
-  type Candidato,
-} from "@/app/candidatos/tarjeta-candidato";
+import { CabeceraPersona, type Candidato } from "@/app/candidatos/tarjeta-candidato";
 import {
   Aviso,
   BOTON_PRINCIPAL,
@@ -18,10 +14,10 @@ import {
   ENLACE,
   ENLACE_EN_TEXTO,
   InsigniaAfinidad,
-  NOMBRE_TARJETA,
   PAGINA,
   SEPARACION_SECCIONES,
   TARJETA,
+  SUBTITULO,
   TEXTO_SUAVE,
   TITULO,
 } from "@/components/ui";
@@ -98,21 +94,13 @@ async function ContenidoMatches() {
   return (
     <>
       {matches.length === 0 ? (
-        <section className="flex flex-col gap-4">
-          <p className="text-texto-suave">
-            Aún no tienes matches. Cuando alguien que te interesa también se interese por ti,
-            aparecerá aquí.
-          </p>
-          <Link href="/candidatos" className={`${BOTON_PRINCIPAL} sm:w-auto sm:self-start`}>
-            Ver candidatos
-          </Link>
-        </section>
+        <SinMatches />
       ) : (
         <section className="flex flex-col gap-4" aria-label="Lista de matches">
           <p className={TEXTO_SUAVE}>
             {matches.length === 1 ? "1 match" : `${matches.length} matches`}
           </p>
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="flex flex-col gap-4">
             {matches.map((match) => (
               <li key={match.id}>
                 <TarjetaMatch
@@ -155,7 +143,38 @@ async function cargarCorreos(
   );
 }
 
-// Tarjeta de un match: foto, nombre, rol, afinidad y correo (PM-39). Nada más de su perfil.
+// Sin matches todavía (boceto 3b de PM-48).
+function SinMatches() {
+  return (
+    <section className={`${TARJETA} border-dashed`}>
+      <div className="flex flex-col items-center gap-4 py-8 text-center md:py-10">
+        <div className="flex size-16 items-center justify-center rounded-full bg-crema text-marino">
+          <svg
+            aria-hidden
+            viewBox="0 0 24 24"
+            className="size-7"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          >
+            <path d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10z" />
+          </svg>
+        </div>
+        <h2 className={SUBTITULO}>Aún no tienes matches</h2>
+        <p className="text-texto-suave">
+          Cuando a alguien le interese lo mismo que a ti, aparecerá aquí con su correo de contacto.
+        </p>
+        <Link href="/candidatos" className={`${BOTON_PRINCIPAL} sm:w-auto`}>
+          Mira tus candidatos
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+// Tarjeta de un match en una fila (boceto 3 de PM-48): círculo, nombre y rol | afinidad |
+// correo (PM-39). En móvil se apila. Nada más de su perfil.
 function TarjetaMatch({
   match,
   miRol,
@@ -166,32 +185,29 @@ function TarjetaMatch({
   correo: string | null;
 }) {
   return (
-    <article className={`${TARJETA} flex h-full flex-col gap-4`}>
-      <FotoCandidato nombre={match.nombre} fotoUrl={match.fotoUrl} />
-      <div className="flex items-start justify-between gap-3">
-        <h2 className={`${NOMBRE_TARJETA} min-w-0 break-words`}>{match.nombre}</h2>
+    <article className={`${TARJETA} flex flex-col gap-4 md:flex-row md:items-center md:gap-8`}>
+      <div className="flex items-start justify-between gap-3 md:w-80 md:shrink-0 md:items-center">
+        <CabeceraPersona persona={match} miRol={miRol} />
         <InsigniaAfinidad>
           {match.afinidad} %<span className="sr-only"> de afinidad</span>
         </InsigniaAfinidad>
       </div>
-      <p className={TEXTO_SUAVE}>
-        <span className="font-semibold">Rol: </span>
-        {etiquetaRolCandidato(match.rol, miRol)}
-      </p>
-      {correo ? (
-        <p className={TEXTO_SUAVE}>
-          <span className="font-semibold">Correo: </span>
-          <a href={`mailto:${correo}`} className={`${ENLACE_EN_TEXTO} break-all`}>
-            {correo}
-          </a>
-          <br />
-          Escríbele para conoceros y organizar una visita al piso.
-        </p>
-      ) : (
-        <p className={TEXTO_SUAVE}>
-          No hemos podido cargar su correo. Recarga la página para intentarlo de nuevo.
-        </p>
-      )}
+      <div className="min-w-0 md:flex-1">
+        {correo ? (
+          <p className={TEXTO_SUAVE}>
+            <span className="font-semibold">Correo: </span>
+            <a href={`mailto:${correo}`} className={`${ENLACE_EN_TEXTO} break-all`}>
+              {correo}
+            </a>
+            <br />
+            Escríbele para conoceros y organizar una visita al piso.
+          </p>
+        ) : (
+          <p className={TEXTO_SUAVE}>
+            No hemos podido cargar su correo. Recarga la página para intentarlo de nuevo.
+          </p>
+        )}
+      </div>
     </article>
   );
 }
