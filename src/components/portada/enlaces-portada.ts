@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 // Adónde llevan los botones de la portada según si el usuario ha iniciado sesión (PM-52).
 export type EnlacesPortada = {
   conSesion: boolean;
-  // «Haz el test en 3 minutos» y la llamada final.
+  // «Haz el test en 5 minutos» y la llamada final.
   test: string;
   // «Busco habitación o compañero de piso» y «Tengo una habitación libre».
   // El registro no deja elegir rol (se elige en /perfil), así que no se preselecciona nada.

@@ -15,10 +15,9 @@ export function CabeceraPortada() {
       <div className="flex flex-col gap-4">
         {/* TODO PM-55: texto provisional */}
         <h1 className={`${TITULO} text-balance`}>Encuentra con quién vivir, no solo dónde</h1>
-        {/* TODO PM-55: texto provisional */}
         <p className="text-lg leading-[1.5]">
           Responde un test de convivencia de 15 preguntas y descubre cuánto encajas con otros
-          estudiantes que buscan piso en Madrid.
+          estudiantes en Madrid, busques piso o tengas una habitación libre.
         </p>
         {/* Los botones dependen de la sesión. Mientras se comprueba, se ven los de sin sesión. */}
         <Suspense fallback={<BotonesCabecera enlaces={ENLACES_SIN_SESION} />}>
@@ -45,8 +44,7 @@ function BotonesCabecera({ enlaces }: { enlaces: EnlacesPortada }) {
     <div className="mt-2 flex flex-col gap-4">
       {/* El único botón principal de la portada (guía de estilo). */}
       <Link href={enlaces.test} className={`${BOTON_PRINCIPAL} sm:w-auto sm:self-start`}>
-        {/* TODO PM-55: texto provisional («3 minutos»: la portada de PM-41 decía «unos 5») */}
-        Haz el test en 3 minutos
+        Haz el test en 5 minutos
       </Link>
       {enlaces.conSesion ? (
         <Link href="/perfil" className={`${ENLACE} self-start`}>
@@ -70,8 +68,7 @@ const CAMINOS = [
   {
     // TODO PM-55: texto provisional
     titulo: "Busco habitación o compañero de piso",
-    // TODO PM-55: texto provisional
-    texto: "Encuentra gente con la que convivir sin sustos.",
+    texto: "Encuentra habitación o a alguien con quien buscar piso juntos.",
     icono: (
       <>
         <circle cx="11" cy="11" r="6" />

@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ENLACE_EN_TEXTO, SUBTITULO, TARJETA } from "@/components/ui";
-import { Proximamente } from "@/components/portada/proximamente";
 
-// Confianza y privacidad (PM-52). Solo promete lo que la web hace (o lo marca «Próximamente»).
+// Confianza y privacidad (PM-52). Solo promete lo que la web hace.
 export function Confianza() {
   return (
     <section aria-labelledby="titulo-confianza" className="flex flex-col gap-6">
@@ -22,8 +21,6 @@ export function Confianza() {
         >
           {/* TODO PM-55: texto provisional */}
           <p>Tu correo solo lo ve otra persona si los dos os interesáis.</p>
-          {/* TODO PM-36/PM-39: quitar Próximamente cuando el match funcione */}
-          <Proximamente />
         </Garantia>
         <Garantia
           icono={

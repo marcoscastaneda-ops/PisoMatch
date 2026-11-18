@@ -1,16 +1,13 @@
 import type { ReactNode } from "react";
 import { ETIQUETA_MAYUSCULAS, SUBTITULO, TARJETA } from "@/components/ui";
-import { Proximamente } from "@/components/portada/proximamente";
 
 // «Cómo funciona» en 4 pasos: test → afinidad → match → contacto (PM-52).
-// Los dos últimos aún no existen en la web (llegan con PM-35, PM-36 y PM-39).
-const PASOS: { titulo: string; texto: string; icono: ReactNode; proximamente: boolean }[] = [
+const PASOS: { titulo: string; texto: string; icono: ReactNode }[] = [
   {
     // TODO PM-55: texto provisional
     titulo: "Haz el test",
     // TODO PM-55: texto provisional
     texto: "15 preguntas sobre horarios, limpieza, ruido o visitas. Tú decides qué te importa más.",
-    proximamente: false,
     icono: (
       <>
         <rect x="5" y="4" width="14" height="17" rx="2" />
@@ -25,7 +22,6 @@ const PASOS: { titulo: string; texto: string; icono: ReactNode; proximamente: bo
     titulo: "Mira tu afinidad",
     // TODO PM-55: texto provisional
     texto: "Te enseñamos tu porcentaje de afinidad con cada persona que ha hecho el test.",
-    proximamente: false,
     icono: (
       <>
         <path d="M5 19L19 5" />
@@ -39,8 +35,6 @@ const PASOS: { titulo: string; texto: string; icono: ReactNode; proximamente: bo
     titulo: "Haz match",
     // TODO PM-55: texto provisional
     texto: "Si a los dos os interesa convivir, es un match.",
-    // TODO PM-36/PM-39: quitar Próximamente cuando el match funcione
-    proximamente: true,
     icono: (
       <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
     ),
@@ -50,8 +44,6 @@ const PASOS: { titulo: string; texto: string; icono: ReactNode; proximamente: bo
     titulo: "Poneos en contacto",
     // TODO PM-55: texto provisional
     texto: "Con el match, cada uno ve el correo del otro para conoceros.",
-    // TODO PM-36/PM-39: quitar Próximamente cuando el match funcione
-    proximamente: true,
     icono: (
       <>
         <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -90,11 +82,6 @@ export function ComoFunciona() {
               <p className={ETIQUETA_MAYUSCULAS}>Paso {i + 1}</p>
               <h3 className="text-lg leading-[1.3] font-semibold">{paso.titulo}</h3>
               <p className="text-texto-suave">{paso.texto}</p>
-              {paso.proximamente && (
-                <span className="mt-2 flex">
-                  <Proximamente />
-                </span>
-              )}
             </div>
           </li>
         ))}
