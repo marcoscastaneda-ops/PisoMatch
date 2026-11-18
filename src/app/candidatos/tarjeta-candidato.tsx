@@ -2,7 +2,9 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import type { Rol } from "@/app/perfil/roles";
 import {
-  FOTO_TARJETA,
+  AVATAR,
+  AVATAR_GRANDE,
+  ETIQUETA_ROL,
   InsigniaAfinidad,
   NOMBRE_TARJETA,
   TARJETA,
@@ -31,27 +33,50 @@ export function etiquetaRolCandidato(rolCandidato: Rol, miRol: Rol) {
   return rolCandidato === "anfitrion" ? "Tiene habitación" : "También busca piso";
 }
 
-// Foto arriba de la tarjeta, o la inicial si no tiene. También la usa «Mis matches» (PM-36).
-export function FotoCandidato({ nombre, fotoUrl }: { nombre: string; fotoUrl: string | null }) {
+// Círculo con la foto, o la inicial si no tiene (PM-56). También lo usan «Mis matches»
+// y la ventana de match (grande).
+export function FotoCandidato({
+  nombre,
+  fotoUrl,
+  grande = false,
+}: {
+  nombre: string;
+  fotoUrl: string | null;
+  grande?: boolean;
+}) {
   return (
-    <div className={FOTO_TARJETA}>
+    <div className={grande ? AVATAR_GRANDE : AVATAR}>
       {fotoUrl ? (
         <Image
           src={fotoUrl}
           alt={`Foto de ${nombre}`}
           fill
           unoptimized
-          sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
+          sizes={grande ? "64px" : "48px"}
           className="object-cover"
         />
       ) : (
-        <span
-          aria-hidden
-          className="flex size-full items-center justify-center text-5xl font-bold text-marino"
-        >
-          {nombre.charAt(0).toUpperCase()}
-        </span>
+        <span aria-hidden>{nombre.charAt(0).toUpperCase()}</span>
       )}
+    </div>
+  );
+}
+
+// Cabecera común de las tarjetas de candidato y de match: círculo, nombre y rol.
+export function CabeceraPersona({
+  persona,
+  miRol,
+}: {
+  persona: Pick<Candidato, "nombre" | "fotoUrl" | "rol">;
+  miRol: Rol;
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      <FotoCandidato nombre={persona.nombre} fotoUrl={persona.fotoUrl} />
+      <div className="flex min-w-0 flex-col gap-1">
+        <h2 className={`${NOMBRE_TARJETA} break-words`}>{persona.nombre}</h2>
+        <span className={ETIQUETA_ROL}>{etiquetaRolCandidato(persona.rol, miRol)}</span>
+      </div>
     </div>
   );
 }
@@ -63,7 +88,7 @@ export function TarjetaCandidato({
 }: {
   candidato: Candidato;
   miRol: Rol;
-  // Botones al final de la tarjeta: «Me interesa» y «Descartar» (PM-36).
+  // Final de la tarjeta: botones «Descartar» / «Me interesa» o la confirmación (PM-36, PM-56).
   acciones?: ReactNode;
 }) {
   const presupuesto =
@@ -73,25 +98,31 @@ export function TarjetaCandidato({
 
   return (
     <article className={`${TARJETA} flex h-full flex-col gap-4`}>
-      <FotoCandidato nombre={candidato.nombre} fotoUrl={candidato.fotoUrl} />
-
       <div className="flex items-start justify-between gap-3">
-        <h2 className={`${NOMBRE_TARJETA} min-w-0 break-words`}>{candidato.nombre}</h2>
+        <CabeceraPersona persona={candidato} miRol={miRol} />
         <InsigniaAfinidad>
           {candidato.afinidad} %<span className="sr-only"> de afinidad</span>
         </InsigniaAfinidad>
       </div>
 
-      <dl className={`${TEXTO_SUAVE} grid grid-cols-[auto_1fr] gap-x-3 gap-y-1`}>
-        <dt className="font-semibold">Rol</dt>
-        <dd>{etiquetaRolCandidato(candidato.rol, miRol)}</dd>
-        <dt className="font-semibold">Zona</dt>
-        <dd>{candidato.zona ?? SIN_INDICAR}</dd>
-        <dt className="font-semibold">Presupuesto</dt>
-        <dd>{presupuesto}</dd>
+      <dl className={`${TEXTO_SUAVE} flex flex-col gap-1`}>
+        <div>
+          <dt className="inline">Zona</dt>
+          <dd className="inline">
+            <span aria-hidden> · </span>
+            <span className="text-marino">{candidato.zona ?? SIN_INDICAR}</span>
+          </dd>
+        </div>
+        <div>
+          <dt className="inline">Presupuesto</dt>
+          <dd className="inline">
+            <span aria-hidden> · </span>
+            <span className="text-marino">{presupuesto}</span>
+          </dd>
+        </div>
       </dl>
 
-      {acciones ? <div className="mt-auto flex flex-col gap-2">{acciones}</div> : null}
+      {acciones ? <div className="mt-auto">{acciones}</div> : null}
     </article>
   );
 }

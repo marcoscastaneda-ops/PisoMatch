@@ -42,15 +42,23 @@ export const ETIQUETA_SUGERENCIA =
 
 // ─── Botones ─────────────────────────────────────────────────────────────────
 
-const BOTON =
-  "inline-flex min-h-12 items-center justify-center rounded-full px-6 py-3.5 text-center text-base leading-none font-semibold transition-colors " +
+// Todo lo común a los botones, menos el padding lateral.
+const BOTON_SIN_PADDING =
+  "inline-flex min-h-12 items-center justify-center rounded-full py-3.5 text-center text-base leading-none font-semibold transition-colors " +
   "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-menta focus-visible:ring-offset-2 " +
   "disabled:cursor-not-allowed disabled:border-transparent disabled:bg-desactivado disabled:text-desactivado-texto";
+const BOTON = `${BOTON_SIN_PADDING} px-6`;
+const COLORES_PRINCIPAL = "bg-marino text-white hover:bg-marino-hover";
+const COLORES_SECUNDARIO = "border-2 border-marino bg-white text-marino hover:bg-crema";
 
 // La acción más importante de la pantalla (solo uno por pantalla). En móvil ocupa todo el ancho.
-export const BOTON_PRINCIPAL = `${BOTON} w-full bg-marino text-white hover:bg-marino-hover`;
+export const BOTON_PRINCIPAL = `${BOTON} w-full ${COLORES_PRINCIPAL}`;
 // El resto de acciones.
-export const BOTON_SECUNDARIO = `${BOTON} border-2 border-marino bg-white text-marino hover:bg-crema`;
+export const BOTON_SECUNDARIO = `${BOTON} ${COLORES_SECUNDARIO}`;
+// Pareja de botones lado a lado dentro de una tarjeta («Descartar» | «Me interesa», PM-56):
+// 16 px de padding lateral en vez de 24 px para que quepan los dos en una tarjeta de 375 px.
+export const BOTON_PRINCIPAL_PAREJA = `${BOTON_SIN_PADDING} w-full px-4 ${COLORES_PRINCIPAL}`;
+export const BOTON_SECUNDARIO_PAREJA = `${BOTON_SIN_PADDING} w-full px-4 ${COLORES_SECUNDARIO}`;
 
 // Enlace suelto («Volver a mi perfil»): verde, subrayado al pasar.
 export const ENLACE =
@@ -88,6 +96,27 @@ export const TARJETA = "rounded-lg border border-borde bg-white p-4 shadow-suave
 export const FOTO_TARJETA = "relative aspect-[4/3] w-full overflow-hidden rounded-[16px] bg-melocoton";
 // Nombre dentro de una tarjeta: Poppins 600 18 px.
 export const NOMBRE_TARJETA = "text-lg leading-[1.3] font-semibold text-marino";
+
+// Círculo con la foto o la inicial de una persona (tarjetas compactas, PM-56).
+// Fondo melocotón si no hay foto; la inicial va en marino (nunca texto melocotón).
+const AVATAR_BASE =
+  "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-melocoton font-bold text-marino";
+// 48 px, al lado del nombre en las tarjetas.
+export const AVATAR = `${AVATAR_BASE} size-12 text-xl`;
+// 64 px, en la ventana de match. El anillo blanco separa los dos círculos cuando se solapan.
+export const AVATAR_GRANDE = `${AVATAR_BASE} size-16 text-2xl ring-4 ring-white`;
+
+// Etiqueta pequeña con el rol de una persona («Tiene habitación», «Busca habitación»…).
+export const ETIQUETA_ROL =
+  "self-start rounded-sm border border-borde bg-crema px-2 py-0.5 text-[13px] leading-[1.4] font-semibold text-marino";
+
+// ─── Ventanas (modales) ──────────────────────────────────────────────────────
+
+// Para un <dialog> abierto con showModal(): centrado, blanco, radio 20 px, sombra fuerte y
+// fondo marino semitransparente detrás. m-auto hace falta porque Tailwind quita los márgenes
+// que centran el <dialog>. Deja 16 px a cada lado en móvil.
+export const VENTANA_MODAL =
+  "m-auto w-[calc(100%-32px)] max-w-[480px] rounded-lg bg-white p-6 text-marino shadow-fuerte backdrop:bg-marino/60";
 
 // ─── Componentes ─────────────────────────────────────────────────────────────
 
@@ -143,6 +172,24 @@ export function ErrorDeCampo({
       </svg>
       <span>{children}</span>
     </p>
+  );
+}
+
+// Icono ✓ para confirmaciones (usa el color del texto que lo rodea).
+export function IconoCheck() {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 16 16"
+      className="mt-0.5 size-4 shrink-0"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 8.5l3.5 3.5L13 4.5" />
+    </svg>
   );
 }
 
